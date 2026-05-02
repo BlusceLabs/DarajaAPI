@@ -7,6 +7,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.8.0] — 2026-05-02
+
+### Added
+- **EVC Plus provider** (`providers/evcplus.php`) — Hormuud Telesom STK-style pull payment for Somalia (USD/SOS); compatible with Telesom Zaad (Somaliland); synchronous API response; callback in `callback_evcplus.php`
+- EVC Plus SVG logo (`logos/evcplus.svg`) with Hormuud red brand colour
+- `index.php` `$pCfg` entry for `evcplus` with USD chips ($1/$5/$10/$25/$50/$100)
+- `health.php` configuration check for EVC Plus (EVCPLUS_MERCHANT_UID, EVCPLUS_API_USER_ID, EVCPLUS_API_KEY)
+- `config.example.php` EVC Plus section with credential and phone-format guidance
+- `admin.php` and README updated; now 15 providers across 40+ African countries including Somalia
+
 ## [1.7.0] — 2026-05-02
 
 ### Added

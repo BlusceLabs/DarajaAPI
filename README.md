@@ -49,6 +49,7 @@ Switch providers by changing one constant in `config.php` — no other code chan
 | **Ecocash** | Zimbabwe, Eswatini, Lesotho | STK Push | `ECOCASH_MERCHANT_CODE`, `ECOCASH_MERCHANT_PIN`, `ECOCASH_MERCHANT_NUMBER` |
 | **Orange Money** | Côte d'Ivoire, Senegal, Mali, Burkina Faso, Guinea, Cameroon, Morocco, Tunisia + more | Hosted checkout | `ORANGE_CLIENT_ID`, `ORANGE_CLIENT_SECRET`, `ORANGE_MERCHANT_KEY` |
 | **Cellulant Tingg** | Kenya, Uganda, Tanzania, Rwanda, Nigeria, Ghana, Zambia, Zimbabwe, Mozambique, Ethiopia + 8 more | Hosted checkout | `CELLULANT_API_KEY`, `CELLULANT_CLIENT_ID`, `CELLULANT_SERVICE_CODE` |
+| **EVC Plus** | Somalia (Hormuud Telesom — Mogadishu & south); compatible with Telesom Zaad (Somaliland) | STK Push | `EVCPLUS_MERCHANT_UID`, `EVCPLUS_API_USER_ID`, `EVCPLUS_API_KEY` |
 
 **STK / STK-style push** providers send a payment prompt directly to the customer's phone — no browser redirect needed.  
 **Hosted checkout** providers redirect the customer to a payment page in their browser.
@@ -69,6 +70,7 @@ define('PAYMENT_PROVIDER', 'paymob');     // Egypt, Morocco, North Africa
 define('PAYMENT_PROVIDER', 'ecocash');    // Zimbabwe STK push
 define('PAYMENT_PROVIDER', 'orangemoney'); // West & North Africa (13+ countries)
 define('PAYMENT_PROVIDER', 'cellulant');  // Pan-African Tingg checkout (18+ countries)
+define('PAYMENT_PROVIDER', 'evcplus');   // Somalia — Hormuud EVC Plus STK push
 ```
 
 ---

@@ -187,3 +187,15 @@ define('TINYPESA_URL',     'https://tinypesa.com/api/v1/express/initialize');
 // define('CELLULANT_CALLBACK_URL',  'https://yourdomain.com/callback_cellulant.php');
 // define('CELLULANT_CURRENCY',      'KES');  // currency for your country
 // define('CELLULANT_COUNTRY',       'KE');   // ISO 3166-1 alpha-2
+
+// EVC PLUS / HORMUUD TELESOM  (STK push — requires PAYMENT_PROVIDER = 'evcplus')
+// Somalia mobile money — Hormuud Telesom EVC Plus (Mogadishu & southern Somalia)
+// Also compatible with Telesom Zaad (Somaliland) via the same API structure.
+// Contact Hormuud merchant services to obtain credentials: https://hormuud.com
+// Phone format: 2526XXXXXXXX (country code 252, then 6XXXXXXXX)
+// ------------------------------------------------------------------
+// define('EVCPLUS_MERCHANT_UID',  'YOUR_MERCHANT_UID');   // e.g. M000001
+// define('EVCPLUS_API_USER_ID',   'YOUR_API_USER_ID');    // from Hormuud portal
+// define('EVCPLUS_API_KEY',       'YOUR_API_KEY');        // from Hormuud portal
+// define('EVCPLUS_CURRENCY',      'USD');    // USD (default) or SOS
+// define('EVCPLUS_ENV',           'production');  // 'sandbox' or 'production'

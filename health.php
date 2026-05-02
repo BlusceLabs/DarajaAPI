@@ -204,6 +204,7 @@ $providerLabels = [
     'ecocash'     => ['Ecocash',         'stk',      '📱'],
     'orangemoney' => ['Orange Money',    'redirect', '🌐'],
     'cellulant'   => ['Cellulant Tingg', 'redirect', '🌐'],
+    'evcplus'     => ['EVC Plus (Somalia)', 'stk',      '📱'],
 ];
 
 if ($configExists) {
@@ -382,6 +383,18 @@ switch ($activeProvider) {
         $providerChecks[] = ['Notify URL',            $nu ? (ORANGE_NOTIFY_URL) : 'Not set — set to callback_orangemoney.php', $nu ? 'ok' : 'warning', $nu ? 'Set' : 'Not Set'];
         $providerChecks[] = ['Return URL',            $ru ? (ORANGE_RETURN_URL) : 'Not set', $ru ? 'ok' : 'warning', $ru ? 'Set' : 'Not Set'];
         $providerChecks[] = ['Country / Currency',    'Currently: ' . $cou . ' — Currency: ' . $cur . ' — 13+ countries supported', 'ok', $cou . '/' . $cur];
+        break;
+
+    case 'evcplus':
+        $mu  = defined('EVCPLUS_MERCHANT_UID') && strlen(EVCPLUS_MERCHANT_UID)  > 3 && EVCPLUS_MERCHANT_UID !== 'YOUR_MERCHANT_UID';
+        $ui  = defined('EVCPLUS_API_USER_ID')  && strlen(EVCPLUS_API_USER_ID)   > 3;
+        $ak  = defined('EVCPLUS_API_KEY')       && strlen(EVCPLUS_API_KEY)       > 5 && EVCPLUS_API_KEY !== 'YOUR_API_KEY';
+        $cur = defined('EVCPLUS_CURRENCY')      ? EVCPLUS_CURRENCY : 'USD';
+        $env = defined('EVCPLUS_ENV')           ? EVCPLUS_ENV      : 'production';
+        $providerChecks[] = ['Merchant UID',   $mu ? 'Configured' : 'Not set or placeholder — get from Hormuud merchant services', $mu ? 'ok' : 'warning', $mu ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['API User ID',    $ui ? 'Configured' : 'Not set', $ui ? 'ok' : 'warning', $ui ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['API Key',        $ak ? 'Configured' : 'Not set or placeholder', $ak ? 'ok' : 'warning', $ak ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Currency / Env', 'Currency: ' . $cur . ' — Environment: ' . $env, 'ok', $cur . '/' . $env];
         break;
 
     case 'cellulant':

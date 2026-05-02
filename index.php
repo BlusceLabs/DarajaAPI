@@ -251,6 +251,26 @@ $pCfg = [
         'flow'         => 'redirect',
     ],
 
+    // ── Somalia ───────────────────────────────────────────────────────────────
+    'evcplus' => [
+        'name'         => 'Pay with EVC Plus',
+        'subtitle'     => 'Hormuud Telesom &mdash; Somalia Mobile Money',
+        'logo'         => '/logos/evcplus.svg',
+        'grad_from'    => '#C8102E', 'grad_to' => '#8B0000', 'text_dark' => false,
+        'phone_label'  => 'EVC Plus Number', 'phone_optional' => false,
+        'phone_ph'     => 'e.g. 0612 345 678',
+        'phone_hint'   => 'Your Hormuud EVC Plus number (061x or 077x).',
+        'phone_err'    => 'Please enter a valid EVC Plus number.',
+        'phone_strict' => false,
+        'currency'     => 'USD', 'symbol' => '$',
+        'amount_min'   => 0.25, 'amount_max' => 10000,
+        'chips'        => [1, 5, 10, 25, 50, 100],
+        'ref_hint'     => 'Order reference.',
+        'push_msg'     => 'You will receive a payment prompt on your EVC Plus number.',
+        'secure_badge' => 'Secured by Hormuud EVC Plus',
+        'flow'         => 'stk',
+    ],
+
     // ── Pan-African (18+ countries) ────────────────────────────────────────────
     'cellulant' => [
         'name'         => 'Pay with Tingg',
