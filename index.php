@@ -1,9 +1,208 @@
+<?php
+require_once __DIR__ . '/config.php';
+$prov = defined('PAYMENT_PROVIDER') ? PAYMENT_PROVIDER : 'tinypesa';
+
+$pCfg = [
+    'tinypesa' => [
+        'name'         => 'Lipa Na M-Pesa',
+        'subtitle'     => 'STK Push &mdash; Secure Mobile Payment',
+        'logo'         => '/logos/tinypesa.png',
+        'grad_from'    => '#006633', 'grad_to' => '#00a651', 'text_dark' => false,
+        'phone_label'  => 'Safaricom Phone Number', 'phone_optional' => false,
+        'phone_ph'     => '0712 345 678',
+        'phone_hint'   => 'Formats accepted: 07XX &bull; 01XX &bull; +254XXX',
+        'phone_err'    => 'Invalid Safaricom number. Use 07XX or 01XX format.',
+        'phone_strict' => true,
+        'currency'     => 'KES', 'symbol' => 'KSh',
+        'amount_min'   => 1, 'amount_max' => 150000,
+        'chips'        => [50, 100, 500, 1000, 2500, 5000],
+        'ref_hint'     => 'Max 12 characters. Appears on the customer\'s M-Pesa statement.',
+        'push_msg'     => 'An M-Pesa prompt has been sent to <strong>{phone}</strong>. Enter your PIN to complete the payment.',
+        'secure_badge' => 'Secured by TinyPesa',
+        'flow'         => 'stk',
+    ],
+    'daraja' => [
+        'name'         => 'Lipa Na M-Pesa',
+        'subtitle'     => 'STK Push &mdash; Secure Mobile Payment',
+        'logo'         => '/logos/daraja.svg',
+        'grad_from'    => '#006633', 'grad_to' => '#00a651', 'text_dark' => false,
+        'phone_label'  => 'Safaricom Phone Number', 'phone_optional' => false,
+        'phone_ph'     => '0712 345 678',
+        'phone_hint'   => 'Formats accepted: 07XX &bull; 01XX &bull; +254XXX',
+        'phone_err'    => 'Invalid Safaricom number. Use 07XX or 01XX format.',
+        'phone_strict' => true,
+        'currency'     => 'KES', 'symbol' => 'KSh',
+        'amount_min'   => 1, 'amount_max' => 150000,
+        'chips'        => [50, 100, 500, 1000, 2500, 5000],
+        'ref_hint'     => 'Max 12 characters. Appears on the customer\'s M-Pesa statement.',
+        'push_msg'     => 'An M-Pesa prompt has been sent to <strong>{phone}</strong>. Enter your PIN to complete the payment.',
+        'secure_badge' => 'Secured by Safaricom Daraja',
+        'flow'         => 'stk',
+    ],
+    'pesapal' => [
+        'name'         => 'Pay with PesaPal',
+        'subtitle'     => 'Secure Hosted Checkout',
+        'logo'         => '/logos/pesapal.png',
+        'grad_from'    => '#1565C0', 'grad_to' => '#1E88E5', 'text_dark' => false,
+        'phone_label'  => 'Phone Number', 'phone_optional' => true,
+        'phone_ph'     => 'e.g. 0712 345 678',
+        'phone_hint'   => 'Your mobile money number (optional &mdash; enter on checkout page)',
+        'phone_err'    => 'Please enter a valid phone number.',
+        'phone_strict' => false,
+        'currency'     => 'KES', 'symbol' => 'KSh',
+        'amount_min'   => 1, 'amount_max' => 150000,
+        'chips'        => [50, 100, 500, 1000, 2500, 5000],
+        'ref_hint'     => 'Max 12 characters. Used as the order reference on the checkout page.',
+        'push_msg'     => '',
+        'secure_badge' => 'Secured by PesaPal',
+        'flow'         => 'redirect',
+    ],
+    'flutterwave' => [
+        'name'         => 'Pay with Flutterwave',
+        'subtitle'     => 'Secure Hosted Checkout',
+        'logo'         => '/logos/flutterwave_32.png',
+        'grad_from'    => '#E8670F', 'grad_to' => '#F5A623', 'text_dark' => false,
+        'phone_label'  => 'Phone Number', 'phone_optional' => true,
+        'phone_ph'     => 'e.g. 0712 345 678',
+        'phone_hint'   => 'Mobile money, card &amp; bank transfer accepted on checkout page',
+        'phone_err'    => 'Please enter a valid phone number.',
+        'phone_strict' => false,
+        'currency'     => defined('FLW_CURRENCY') ? FLW_CURRENCY : 'KES',
+        'symbol'       => defined('FLW_CURRENCY') ? FLW_CURRENCY : 'KSh',
+        'amount_min'   => 1, 'amount_max' => 1000000,
+        'chips'        => [50, 100, 500, 1000, 2500, 5000],
+        'ref_hint'     => 'Max 12 characters. Used as the order reference on the checkout page.',
+        'push_msg'     => '',
+        'secure_badge' => 'Secured by Flutterwave',
+        'flow'         => 'redirect',
+    ],
+    'paystack' => [
+        'name'         => 'Pay with Paystack',
+        'subtitle'     => 'Secure Hosted Checkout',
+        'logo'         => '/logos/paystack.png',
+        'grad_from'    => '#011B33', 'grad_to' => '#0066CC', 'text_dark' => false,
+        'phone_label'  => 'Phone Number', 'phone_optional' => true,
+        'phone_ph'     => 'e.g. 0712 345 678',
+        'phone_hint'   => 'Card, bank transfer &amp; mobile money accepted on checkout page',
+        'phone_err'    => 'Please enter a valid phone number.',
+        'phone_strict' => false,
+        'currency'     => defined('PAYSTACK_CURRENCY') ? PAYSTACK_CURRENCY : 'KES',
+        'symbol'       => defined('PAYSTACK_CURRENCY') ? PAYSTACK_CURRENCY : 'KSh',
+        'amount_min'   => 1, 'amount_max' => 1000000,
+        'chips'        => [100, 500, 1000, 2500, 5000, 10000],
+        'ref_hint'     => 'Max 12 characters. Used as the order reference on the checkout page.',
+        'push_msg'     => '',
+        'secure_badge' => 'Secured by Paystack',
+        'flow'         => 'redirect',
+    ],
+    'mtnmomo' => [
+        'name'         => 'MTN Mobile Money',
+        'subtitle'     => 'Pay with MTN MoMo',
+        'logo'         => '/logos/mtnmomo.svg',
+        'grad_from'    => '#FFCC00', 'grad_to' => '#F6A200', 'text_dark' => true,
+        'phone_label'  => 'MTN Phone Number', 'phone_optional' => false,
+        'phone_ph'     => 'e.g. 0701 234 567',
+        'phone_hint'   => 'Enter your MTN registered number',
+        'phone_err'    => 'Please enter a valid phone number (min 7 digits).',
+        'phone_strict' => false,
+        'currency'     => defined('MTNMOMO_CURRENCY') ? MTNMOMO_CURRENCY : 'UGX',
+        'symbol'       => defined('MTNMOMO_CURRENCY') ? MTNMOMO_CURRENCY : 'UGX',
+        'amount_min'   => 100, 'amount_max' => 10000000,
+        'chips'        => [1000, 5000, 10000, 50000, 100000, 500000],
+        'ref_hint'     => 'Max 12 characters. Appears on the customer\'s MoMo statement.',
+        'push_msg'     => 'An MTN MoMo prompt has been sent to <strong>{phone}</strong>. Approve the request on your phone to complete the payment.',
+        'secure_badge' => 'Secured by MTN MoMo',
+        'flow'         => 'stk',
+    ],
+    'airtelmoney' => [
+        'name'         => 'Airtel Money',
+        'subtitle'     => 'Pay with Airtel Money',
+        'logo'         => '/logos/airtelmoney.png',
+        'grad_from'    => '#CC0000', 'grad_to' => '#E40521', 'text_dark' => false,
+        'phone_label'  => 'Airtel Phone Number', 'phone_optional' => false,
+        'phone_ph'     => '0701 234 567',
+        'phone_hint'   => 'Your Airtel registered number',
+        'phone_err'    => 'Please enter a valid phone number (min 7 digits).',
+        'phone_strict' => false,
+        'currency'     => defined('AIRTEL_CURRENCY') ? AIRTEL_CURRENCY : 'KES',
+        'symbol'       => defined('AIRTEL_CURRENCY') ? AIRTEL_CURRENCY : 'KSh',
+        'amount_min'   => 1, 'amount_max' => 500000,
+        'chips'        => [50, 100, 500, 1000, 2500, 5000],
+        'ref_hint'     => 'Max 12 characters. Appears on the customer\'s Airtel statement.',
+        'push_msg'     => 'An Airtel Money prompt has been sent to <strong>{phone}</strong>. Enter your PIN to complete the payment.',
+        'secure_badge' => 'Secured by Airtel Money',
+        'flow'         => 'stk',
+    ],
+    'dpopay' => [
+        'name'         => 'Pay with DPO Pay',
+        'subtitle'     => 'Secure Hosted Checkout',
+        'logo'         => '/logos/dpopay.png',
+        'grad_from'    => '#1a3c6e', 'grad_to' => '#2861bd', 'text_dark' => false,
+        'phone_label'  => 'Phone Number', 'phone_optional' => true,
+        'phone_ph'     => 'e.g. 0712 345 678',
+        'phone_hint'   => 'Cards, mobile money &amp; bank transfer accepted on checkout page',
+        'phone_err'    => 'Please enter a valid phone number.',
+        'phone_strict' => false,
+        'currency'     => defined('DPO_CURRENCY') ? DPO_CURRENCY : 'KES',
+        'symbol'       => defined('DPO_CURRENCY') ? DPO_CURRENCY : 'KSh',
+        'amount_min'   => 1, 'amount_max' => 1000000,
+        'chips'        => [50, 100, 500, 1000, 2500, 5000],
+        'ref_hint'     => 'Max 12 characters. Used as the order reference on the checkout page.',
+        'push_msg'     => '',
+        'secure_badge' => 'Secured by DPO Pay',
+        'flow'         => 'redirect',
+    ],
+    'ozow' => [
+        'name'         => 'Pay with Ozow',
+        'subtitle'     => 'Instant EFT &mdash; South Africa',
+        'logo'         => '/logos/ozow.png',
+        'grad_from'    => '#00857D', 'grad_to' => '#00B5B0', 'text_dark' => false,
+        'phone_label'  => 'Phone Number', 'phone_optional' => true,
+        'phone_ph'     => 'e.g. 083 123 4567',
+        'phone_hint'   => 'Your South African mobile number (optional)',
+        'phone_err'    => 'Please enter a valid phone number.',
+        'phone_strict' => false,
+        'currency'     => 'ZAR', 'symbol' => 'R',
+        'amount_min'   => 1, 'amount_max' => 100000,
+        'chips'        => [50, 100, 250, 500, 1000, 2000],
+        'ref_hint'     => 'Max 12 characters. Used as the order reference.',
+        'push_msg'     => '',
+        'secure_badge' => 'Secured by Ozow',
+        'flow'         => 'redirect',
+    ],
+];
+
+$c = $pCfg[$prov] ?? $pCfg['tinypesa'];
+
+$gradStyle    = "background: linear-gradient(135deg, {$c['grad_from']} 0%, {$c['grad_to']} 100%);";
+$headerColor  = $c['text_dark'] ? '#111' : '#fff';
+$headerColor2 = $c['text_dark'] ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.78)';
+$amountLabel  = htmlspecialchars($c['currency']) . ' Amount';
+$amountMin    = $c['amount_min'];
+$amountMax    = $c['amount_max'];
+$amountHint   = 'Min: ' . $c['symbol'] . ' ' . number_format($amountMin) . ' &bull; Max: ' . $c['symbol'] . ' ' . number_format($amountMax);
+$phoneOptionalBadge = $c['phone_optional'] ? ' <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--text-4)">(optional)</span>' : '';
+
+$chipsHtml = '';
+foreach ($c['chips'] as $v) {
+    $label = $v >= 1000 ? number_format($v / 1000, $v % 1000 === 0 ? 0 : 1) . 'K' : number_format($v);
+    $chipsHtml .= '<span class="chip" data-val="' . $v . '">' . $label . '</span>';
+}
+
+$jsPhoneStrict = $c['phone_strict'] ? 'true' : 'false';
+$jsPhoneOptional = $c['phone_optional'] ? 'true' : 'false';
+$jsFlow           = htmlspecialchars($c['flow']);
+$jsPushMsg        = addslashes($c['push_msg']);
+$jsCurrency       = addslashes($c['symbol']);
+$jsAmountMin      = $amountMin;
+$jsAmountMax      = $amountMax;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lipa Na M-Pesa</title>
+    <title><?= htmlspecialchars($c['name']) ?></title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <script>(function(){var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);})();</script>
     <style>
@@ -30,6 +229,8 @@
             --msg-wait-bg: #fff8e6;    --msg-wait-text: #7a5a00;    --msg-wait-border: #f0d98a;
             --receipt-label: rgba(26,107,58,0.7);
             --receipt-value: #1a6b3a;
+            --accent: <?= $c['grad_to'] ?>;
+            --accent-dark: <?= $c['grad_from'] ?>;
         }
         :root[data-theme="dark"] {
             --bg: #0d1117;
@@ -81,29 +282,36 @@
         }
 
         .card-header {
-            background: linear-gradient(135deg, #006633 0%, #00a651 100%);
+            <?= $gradStyle ?>
             padding: 28px 32px 24px;
             text-align: center;
         }
 
-        .mpesa-logo {
+        .provider-logo-wrap {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 4px;
         }
 
-        .mpesa-icon {
-            width: 38px; height: 38px;
-            background: rgba(255,255,255,0.2);
+        .provider-logo-img {
+            width: 40px; height: 40px;
+            background: rgba(255,255,255,0.92);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; font-weight: 800; color: #fff;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.18);
         }
 
-        .card-header h1 { color: #fff; font-size: 22px; font-weight: 700; }
-        .card-header p  { color: rgba(255,255,255,0.78); font-size: 13px; margin-top: 4px; }
+        .provider-logo-img img {
+            width: 26px; height: 26px;
+            object-fit: contain;
+        }
+
+        .card-header h1 { color: <?= $headerColor ?>; font-size: 22px; font-weight: 700; }
+        .card-header p  { color: <?= $headerColor2 ?>; font-size: 13px; margin-top: 4px; }
 
         .card-body { padding: 28px 28px 24px; }
 
@@ -146,8 +354,8 @@
 
         input:focus {
             outline: none;
-            border-color: #00a651;
-            box-shadow: 0 0 0 3px rgba(0,166,81,0.12);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
             background: var(--surface);
         }
 
@@ -168,7 +376,7 @@
         .field-ok.show { display: flex; }
 
         input.invalid { border-color: #e74c3c !important; box-shadow: 0 0 0 3px rgba(231,76,60,0.10) !important; }
-        input.valid   { border-color: #00a651 !important; box-shadow: 0 0 0 3px rgba(0,166,81,0.10) !important; }
+        input.valid   { border-color: var(--accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important; }
 
         .quick-amounts {
             display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px;
@@ -179,19 +387,19 @@
             border: 1.5px solid var(--chip-border);
             border-radius: 20px;
             font-size: 12px; font-weight: 600;
-            color: #006633;
+            color: var(--accent-dark);
             background: var(--chip-bg);
             cursor: pointer;
             transition: all 0.15s;
         }
-        :root[data-theme="dark"] .chip { color: #3fb950; }
+        :root[data-theme="dark"] .chip { color: var(--accent); }
 
         .chip:hover, .chip.selected {
-            background: #006633; color: #fff; border-color: #006633;
+            background: var(--accent-dark); color: #fff; border-color: var(--accent-dark);
         }
 
         .ref-toggle {
-            font-size: 12px; color: #00a651; cursor: pointer;
+            font-size: 12px; color: var(--accent); cursor: pointer;
             text-decoration: underline;
             margin-top: -8px; margin-bottom: 16px; display: inline-block;
         }
@@ -201,8 +409,8 @@
 
         .btn {
             width: 100%; padding: 14px;
-            background: linear-gradient(135deg, #006633, #00a651);
-            color: #fff; border: none; border-radius: 10px;
+            background: linear-gradient(135deg, <?= $c['grad_from'] ?>, <?= $c['grad_to'] ?>);
+            color: <?= $c['text_dark'] ? '#111' : '#fff' ?>; border: none; border-radius: 10px;
             font-size: 15px; font-weight: 700; cursor: pointer;
             letter-spacing: 0.4px;
             transition: opacity 0.2s, transform 0.1s;
@@ -214,8 +422,8 @@
 
         .spinner {
             width: 16px; height: 16px;
-            border: 2.5px solid rgba(255,255,255,0.35);
-            border-top-color: #fff;
+            border: 2.5px solid <?= $c['text_dark'] ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.35)' ?>;
+            border-top-color: <?= $c['text_dark'] ? '#111' : '#fff' ?>;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
             flex-shrink: 0;
@@ -246,7 +454,7 @@
         .progress-wrap { margin-top: 14px; display: none; }
         .progress-wrap.show { display: block; }
         .progress-bar { height: 3px; background: var(--progress-bg); border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #006633, #00a651); border-radius: 2px; animation: prog 60s linear forwards; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, <?= $c['grad_from'] ?>, <?= $c['grad_to'] ?>); border-radius: 2px; animation: prog 60s linear forwards; }
         @keyframes prog { from { width: 0 } to { width: 100% } }
         .progress-label { font-size: 11.5px; color: var(--text-4); text-align: center; }
 
@@ -259,14 +467,13 @@
             font-size: 12px; color: var(--text-4); text-decoration: none;
             display: flex; align-items: center; gap: 5px;
         }
-        .footer-link:hover { color: #006633; }
+        .footer-link:hover { color: var(--accent-dark); }
         .secure-badge {
             display: flex; align-items: center; gap: 5px;
             font-size: 11.5px; color: var(--text-5);
         }
         .secure-badge svg { width: 12px; height: 12px; }
 
-        /* Copy receipt & pay again */
         .copy-btn {
             display: inline-flex; align-items: center; gap: 4px;
             font-size: 11px; font-weight: 600; padding: 2px 8px;
@@ -287,7 +494,6 @@
         }
         .pay-again-btn:hover { opacity: 0.75; }
 
-        /* Theme toggle */
         .theme-btn {
             position: fixed; bottom: 20px; right: 20px;
             width: 40px; height: 40px; border-radius: 50%;
@@ -304,44 +510,41 @@
 
 <div class="card">
     <div class="card-header">
-        <div class="mpesa-logo">
-            <div class="mpesa-icon">M</div>
-            <h1>Lipa Na M-Pesa</h1>
+        <div class="provider-logo-wrap">
+            <div class="provider-logo-img">
+                <img src="<?= htmlspecialchars($c['logo']) ?>" alt="<?= htmlspecialchars($c['name']) ?>" onerror="this.style.display='none'">
+            </div>
+            <h1><?= htmlspecialchars($c['name']) ?></h1>
         </div>
-        <p>STK Push &mdash; Secure Mobile Payment</p>
+        <p><?= $c['subtitle'] ?></p>
     </div>
 
     <div class="card-body">
         <form id="paymentForm" novalidate>
 
             <div class="form-group">
-                <label for="phone">Safaricom Phone Number</label>
+                <label for="phone"><?= htmlspecialchars($c['phone_label']) ?><?= $phoneOptionalBadge ?></label>
                 <div class="input-wrap">
                     <span class="input-prefix">📱</span>
-                    <input type="tel" id="phone" placeholder="0712 345 678" autocomplete="tel" required>
+                    <input type="tel" id="phone" placeholder="<?= htmlspecialchars($c['phone_ph']) ?>" autocomplete="tel"<?= $c['phone_optional'] ? '' : ' required' ?>>
                 </div>
-                <p class="field-error" id="phoneError">&#9888; Invalid Safaricom number. Use 07XX or 01XX format.</p>
+                <p class="field-error" id="phoneError">&#9888; <?= htmlspecialchars($c['phone_err']) ?></p>
                 <p class="field-ok"    id="phoneOk">&#10003; Valid phone number</p>
-                <p class="hint" id="phoneHint">Formats accepted: 07XX &bull; 01XX &bull; +254XXX</p>
+                <p class="hint" id="phoneHint"><?= $c['phone_hint'] ?></p>
             </div>
 
             <div class="form-group">
-                <label for="amount">Amount (KES)</label>
+                <label for="amount"><?= $amountLabel ?></label>
                 <div class="input-wrap">
-                    <span class="input-prefix">KSh</span>
-                    <input type="number" id="amount" placeholder="Enter amount" min="1" max="150000" required>
+                    <span class="input-prefix"><?= htmlspecialchars($c['symbol']) ?></span>
+                    <input type="number" id="amount" placeholder="Enter amount" min="<?= $amountMin ?>" max="<?= $amountMax ?>" required>
                 </div>
                 <div class="quick-amounts">
-                    <span class="chip" data-val="50">50</span>
-                    <span class="chip" data-val="100">100</span>
-                    <span class="chip" data-val="500">500</span>
-                    <span class="chip" data-val="1000">1,000</span>
-                    <span class="chip" data-val="2500">2,500</span>
-                    <span class="chip" data-val="5000">5,000</span>
+                    <?= $chipsHtml ?>
                 </div>
-                <p class="field-error" id="amountError">&#9888; Enter an amount between KES 1 and KES 150,000.</p>
+                <p class="field-error" id="amountError">&#9888; Enter an amount between <?= $c['symbol'] ?> <?= number_format($amountMin) ?> and <?= $c['symbol'] ?> <?= number_format($amountMax) ?>.</p>
                 <p class="field-ok"    id="amountOk">&#10003; Valid amount</p>
-                <p class="hint" id="amountHint" style="margin-top:8px">Min: KES 1 &bull; Max: KES 150,000</p>
+                <p class="hint" id="amountHint" style="margin-top:8px"><?= $amountHint ?></p>
             </div>
 
             <span class="ref-toggle" id="refToggle">+ Add account reference</span>
@@ -352,7 +555,7 @@
                     <span class="input-prefix">#</span>
                     <input type="text" id="reference" placeholder="e.g. Invoice-001 or Order ID" maxlength="12">
                 </div>
-                <p class="hint">Max 12 characters. Appears on the customer's M-Pesa statement.</p>
+                <p class="hint"><?= htmlspecialchars($c['ref_hint']) ?></p>
             </div>
 
             <button type="submit" class="btn" id="submitBtn">Pay Now</button>
@@ -380,7 +583,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            Secured by Safaricom Daraja
+            <?= htmlspecialchars($c['secure_badge']) ?>
         </div>
     </div>
 </div>
@@ -388,6 +591,15 @@
 <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle dark mode"></button>
 
 <script>
+    // ---- Config from PHP ----
+    const PHONE_STRICT   = <?= $jsPhoneStrict ?>;
+    const PHONE_OPTIONAL = <?= $jsPhoneOptional ?>;
+    const FLOW           = '<?= $jsFlow ?>';
+    const PUSH_MSG       = '<?= $jsPushMsg ?>';
+    const CURRENCY_SYM   = '<?= $jsCurrency ?>';
+    const AMOUNT_MIN     = <?= $jsAmountMin ?>;
+    const AMOUNT_MAX     = <?= $jsAmountMax ?>;
+
     // ---- Theme ----
     function toggleTheme() {
         const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -402,17 +614,23 @@
     updateThemeIcon();
 
     // ---- Form ----
-    const form        = document.getElementById('paymentForm');
-    const phoneInput  = document.getElementById('phone');
-    const amountInput = document.getElementById('amount');
-    const refInput    = document.getElementById('reference');
-    const submitBtn   = document.getElementById('submitBtn');
-    const messageDiv  = document.getElementById('message');
-    const msgIcon     = document.getElementById('msgIcon');
-    const msgText     = document.getElementById('msgText');
+    const form         = document.getElementById('paymentForm');
+    const phoneInput   = document.getElementById('phone');
+    const amountInput  = document.getElementById('amount');
+    const refInput     = document.getElementById('reference');
+    const submitBtn    = document.getElementById('submitBtn');
+    const messageDiv   = document.getElementById('message');
+    const msgIcon      = document.getElementById('msgIcon');
+    const msgText      = document.getElementById('msgText');
     const progressWrap = document.getElementById('progressWrap');
-    const refToggle   = document.getElementById('refToggle');
-    const refField    = document.getElementById('refField');
+    const refToggle    = document.getElementById('refToggle');
+    const refField     = document.getElementById('refField');
+    const phoneError   = document.getElementById('phoneError');
+    const phoneOk      = document.getElementById('phoneOk');
+    const phoneHint    = document.getElementById('phoneHint');
+    const amountError  = document.getElementById('amountError');
+    const amountOk     = document.getElementById('amountOk');
+    const amountHint   = document.getElementById('amountHint');
 
     let pollInterval = null;
 
@@ -425,21 +643,18 @@
     }
 
     function validatePhone(val) {
-        const stripped = val.replace(/^(\+254|254|0)/, '');
-        return /^(7|1)\d{8}$/.test(stripped);
+        if (!val) return PHONE_OPTIONAL;
+        if (PHONE_STRICT) {
+            const stripped = val.replace(/^(\+254|254|0)/, '');
+            return /^(7|1)\d{8}$/.test(stripped);
+        }
+        return val.replace(/\D/g, '').length >= 7;
     }
 
     function validateAmount(val) {
         const n = parseFloat(val);
-        return !isNaN(n) && n >= 1 && n <= 150000;
+        return !isNaN(n) && n >= AMOUNT_MIN && n <= AMOUNT_MAX;
     }
-
-    const phoneError  = document.getElementById('phoneError');
-    const phoneOk     = document.getElementById('phoneOk');
-    const phoneHint   = document.getElementById('phoneHint');
-    const amountError = document.getElementById('amountError');
-    const amountOk    = document.getElementById('amountOk');
-    const amountHint  = document.getElementById('amountHint');
 
     phoneInput.addEventListener('input', () => {
         const v = phoneInput.value.trim();
@@ -468,14 +683,14 @@
             amountInput.value = chip.dataset.val;
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
             chip.classList.add('selected');
+            amountInput.dispatchEvent(new Event('input'));
         });
     });
 
     amountInput.addEventListener('input', () => {
-        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
         const v = parseInt(amountInput.value);
         document.querySelectorAll('.chip').forEach(c => {
-            if (parseInt(c.dataset.val) === v) c.classList.add('selected');
+            c.classList.toggle('selected', parseInt(c.dataset.val) === v);
         });
     });
 
@@ -487,7 +702,7 @@
     }
 
     function escHtml(s) {
-        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     function setLoading(on) {
@@ -523,7 +738,7 @@
                     let receiptHtml = '';
                     if (data.receipt || data.amount) {
                         receiptHtml = '<dl class="receipt-grid">';
-                        if (data.amount)    receiptHtml += '<dt>Amount</dt><dd>KES ' + Number(data.amount).toLocaleString() + '</dd>';
+                        if (data.amount)    receiptHtml += '<dt>Amount</dt><dd>' + CURRENCY_SYM + ' ' + Number(data.amount).toLocaleString() + '</dd>';
                         if (data.receipt)   receiptHtml += '<dt>Receipt</dt><dd>' + escHtml(data.receipt) + '<button class="copy-btn" onclick="copyReceipt(\'' + escHtml(data.receipt) + '\', this)" title="Copy receipt">Copy</button></dd>';
                         if (data.timestamp) receiptHtml += '<dt>Date</dt><dd>' + escHtml(String(data.timestamp)) + '</dd>';
                         receiptHtml += '</dl>';
@@ -538,7 +753,7 @@
                     clearInterval(pollInterval);
                     resetProgress();
                     showMessage('waiting', 'Confirmation Pending',
-                        'We haven\'t received confirmation yet. Please check your M-Pesa messages.');
+                        'We haven\'t received confirmation yet. Please check your payment app messages.');
                 }
             } catch (e) { /* keep polling */ }
         }, 5000);
@@ -579,8 +794,20 @@
         const amount    = amountInput.value.trim();
         const reference = refInput.value.trim();
 
-        if (!phone || !amount) {
+        if (!PHONE_OPTIONAL && !phone) {
             showMessage('error', 'Missing fields', 'Please enter your phone number and amount.');
+            return;
+        }
+        if (!amount) {
+            showMessage('error', 'Missing amount', 'Please enter the amount to pay.');
+            return;
+        }
+        if (!validateAmount(amount)) {
+            showMessage('error', 'Invalid amount', 'Enter an amount between ' + CURRENCY_SYM + ' ' + AMOUNT_MIN.toLocaleString() + ' and ' + CURRENCY_SYM + ' ' + AMOUNT_MAX.toLocaleString() + '.');
+            return;
+        }
+        if (phone && !validatePhone(phone)) {
+            showMessage('error', 'Invalid phone', 'Please enter a valid phone number.');
             return;
         }
 
@@ -596,15 +823,13 @@
 
             if (data.success) {
                 if (data.flow === 'redirect' && data.redirect_url) {
-                    // Hosted checkout — redirect to provider's payment page
                     showMessage('waiting', 'Redirecting…',
                         'Taking you to the payment page. Please complete your payment there.');
                     setTimeout(() => { window.location.href = data.redirect_url; }, 1500);
                 } else {
-                    // STK Push — wait for PIN on phone
                     const ref = data.reference ? ' <span style="opacity:0.75;font-size:12px">(Ref: ' + escHtml(data.reference) + ')</span>' : '';
-                    showMessage('waiting', 'Check Your Phone!' + ref,
-                        'An M-Pesa prompt has been sent to <strong>' + escHtml(phone) + '</strong>. Enter your PIN to complete the payment.');
+                    const pushBody = PUSH_MSG ? PUSH_MSG.replace('{phone}', escHtml(phone)) : 'A payment request has been sent to <strong>' + escHtml(phone) + '</strong>. Approve it to complete the payment.';
+                    showMessage('waiting', 'Check Your Phone!' + ref, pushBody);
                     startPolling(phone);
                 }
             } else {
