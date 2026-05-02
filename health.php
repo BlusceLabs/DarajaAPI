@@ -199,6 +199,11 @@ $providerLabels = [
     'airtelmoney' => ['Airtel Money',    'stk',      '📱'],
     'dpopay'      => ['DPO Pay',         'redirect', '🌐'],
     'ozow'        => ['Ozow',            'redirect', '🌐'],
+    'cinetpay'    => ['CinetPay',        'redirect', '🌐'],
+    'paymob'      => ['Paymob',          'redirect', '🌐'],
+    'ecocash'     => ['Ecocash',         'stk',      '📱'],
+    'orangemoney' => ['Orange Money',    'redirect', '🌐'],
+    'cellulant'   => ['Cellulant Tingg', 'redirect', '🌐'],
 ];
 
 if ($configExists) {
@@ -320,6 +325,79 @@ switch ($activeProvider) {
         $providerChecks[] = ['Notify URL',        $nu ? (OZOW_NOTIFY_URL) : 'Not set — set to callback_ozow.php', $nu ? 'ok' : 'warning', $nu ? 'Set' : 'Not Set'];
         $providerChecks[] = ['Success URL',       $su ? (OZOW_SUCCESS_URL) : 'Not set', $su ? 'ok' : 'warning', $su ? 'Set' : 'Not Set'];
         $providerChecks[] = ['Test Mode',         $tst ? 'ENABLED — use test bank credentials from Ozow dashboard' : 'Disabled — live payments', $tst ? 'warning' : 'ok', $tst ? 'Test' : 'Live'];
+        break;
+
+    case 'cinetpay':
+        $ak  = defined('CINETPAY_API_KEY')    && strlen(CINETPAY_API_KEY)    > 5 && CINETPAY_API_KEY !== 'YOUR_CINETPAY_API_KEY';
+        $si  = defined('CINETPAY_SITE_ID')    && strlen(CINETPAY_SITE_ID)    > 1;
+        $nu  = defined('CINETPAY_NOTIFY_URL') && strpos(CINETPAY_NOTIFY_URL, 'http') === 0;
+        $ru  = defined('CINETPAY_RETURN_URL') && strpos(CINETPAY_RETURN_URL, 'http') === 0;
+        $cur = defined('CINETPAY_CURRENCY')   ? CINETPAY_CURRENCY : 'XOF';
+        $providerChecks[] = ['CinetPay API Key',   $ak ? 'Configured' : 'Not set or placeholder', $ak ? 'ok' : 'warning', $ak ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['CinetPay Site ID',   $si ? 'Configured' : 'Not set', $si ? 'ok' : 'warning', $si ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Notify URL',          $nu ? (CINETPAY_NOTIFY_URL) : 'Not set — set to callback_cinetpay.php', $nu ? 'ok' : 'warning', $nu ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Return URL',          $ru ? (CINETPAY_RETURN_URL) : 'Not set', $ru ? 'ok' : 'warning', $ru ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Currency',            'Currently: ' . $cur . ' — 15+ Francophone African countries supported', 'ok', $cur];
+        break;
+
+    case 'paymob':
+        $ak  = defined('PAYMOB_API_KEY')        && strlen(PAYMOB_API_KEY)        > 10 && PAYMOB_API_KEY !== 'YOUR_PAYMOB_API_KEY';
+        $ii  = defined('PAYMOB_INTEGRATION_ID') && (int)PAYMOB_INTEGRATION_ID    > 0;
+        $fi  = defined('PAYMOB_IFRAME_ID')      && (int)PAYMOB_IFRAME_ID         > 0;
+        $hm  = defined('PAYMOB_HMAC_SECRET')    && strlen(PAYMOB_HMAC_SECRET)    > 5;
+        $cur = defined('PAYMOB_CURRENCY')       ? PAYMOB_CURRENCY : 'EGP';
+        $cou = defined('PAYMOB_COUNTRY')        ? PAYMOB_COUNTRY  : 'EG';
+        $providerChecks[] = ['Paymob API Key',        $ak ? 'Configured' : 'Not set or placeholder', $ak ? 'ok' : 'warning', $ak ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Integration ID',         $ii ? (PAYMOB_INTEGRATION_ID) : 'Not set — enter numeric Integration ID from Paymob portal', $ii ? 'ok' : 'warning', $ii ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['iFrame ID',              $fi ? (PAYMOB_IFRAME_ID) : 'Not set — enter numeric iFrame ID from Paymob portal', $fi ? 'ok' : 'warning', $fi ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['HMAC Secret',            $hm ? 'Configured — webhooks will be verified' : 'Not set — webhook signature verification disabled', $hm ? 'ok' : 'warning', $hm ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Currency / Country',     'Currently: ' . $cur . ' / ' . $cou, 'ok', $cur . '/' . $cou];
+        break;
+
+    case 'ecocash':
+        $mc  = defined('ECOCASH_MERCHANT_CODE')   && strlen(ECOCASH_MERCHANT_CODE)   > 1 && ECOCASH_MERCHANT_CODE !== 'YOUR_MERCHANT_CODE';
+        $mp  = defined('ECOCASH_MERCHANT_PIN')    && strlen(ECOCASH_MERCHANT_PIN)    > 1;
+        $mn  = defined('ECOCASH_MERCHANT_NUMBER') && strlen(ECOCASH_MERCHANT_NUMBER) > 5;
+        $cb  = defined('ECOCASH_CALLBACK_URL')    && strpos(ECOCASH_CALLBACK_URL, 'http') === 0;
+        $env = defined('ECOCASH_ENV')             ? ECOCASH_ENV : 'sandbox';
+        $cur = defined('ECOCASH_CURRENCY')        ? ECOCASH_CURRENCY : 'USD';
+        $providerChecks[] = ['Ecocash Merchant Code',   $mc ? 'Configured' : 'Not set or placeholder', $mc ? 'ok' : 'warning', $mc ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Ecocash Merchant PIN',    $mp ? 'Configured' : 'Not set', $mp ? 'ok' : 'warning', $mp ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Ecocash Merchant Number', $mn ? (ECOCASH_MERCHANT_NUMBER) : 'Not set', $mn ? 'ok' : 'warning', $mn ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Callback URL',             $cb ? (ECOCASH_CALLBACK_URL) : 'Not set — set to callback_ecocash.php', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Environment / Currency',   'Currently: ' . strtoupper($env) . ' — Currency: ' . $cur, $env === 'production' ? 'ok' : 'warning', strtoupper($env)];
+        break;
+
+    case 'orangemoney':
+        $ci  = defined('ORANGE_CLIENT_ID')     && strlen(ORANGE_CLIENT_ID)     > 5 && ORANGE_CLIENT_ID !== 'YOUR_ORANGE_CLIENT_ID';
+        $cs  = defined('ORANGE_CLIENT_SECRET') && strlen(ORANGE_CLIENT_SECRET) > 5;
+        $mk  = defined('ORANGE_MERCHANT_KEY')  && strlen(ORANGE_MERCHANT_KEY)  > 3;
+        $nu  = defined('ORANGE_NOTIFY_URL')    && strpos(ORANGE_NOTIFY_URL, 'http') === 0;
+        $ru  = defined('ORANGE_RETURN_URL')    && strpos(ORANGE_RETURN_URL, 'http') === 0;
+        $cou = defined('ORANGE_COUNTRY')       ? strtoupper(ORANGE_COUNTRY)  : 'CI';
+        $cur = defined('ORANGE_CURRENCY')      ? ORANGE_CURRENCY : 'XOF';
+        $providerChecks[] = ['Orange Client ID',     $ci ? 'Configured' : 'Not set or placeholder', $ci ? 'ok' : 'warning', $ci ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Orange Client Secret', $cs ? 'Configured' : 'Not set', $cs ? 'ok' : 'warning', $cs ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Orange Merchant Key',  $mk ? 'Configured' : 'Not set', $mk ? 'ok' : 'warning', $mk ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Notify URL',            $nu ? (ORANGE_NOTIFY_URL) : 'Not set — set to callback_orangemoney.php', $nu ? 'ok' : 'warning', $nu ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Return URL',            $ru ? (ORANGE_RETURN_URL) : 'Not set', $ru ? 'ok' : 'warning', $ru ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Country / Currency',    'Currently: ' . $cou . ' — Currency: ' . $cur . ' — 13+ countries supported', 'ok', $cou . '/' . $cur];
+        break;
+
+    case 'cellulant':
+        $ak  = defined('CELLULANT_API_KEY')       && strlen(CELLULANT_API_KEY)       > 5 && CELLULANT_API_KEY !== 'YOUR_CELLULANT_API_KEY';
+        $ci  = defined('CELLULANT_CLIENT_ID')     && strlen(CELLULANT_CLIENT_ID)     > 3;
+        $cs  = defined('CELLULANT_CLIENT_SECRET') && strlen(CELLULANT_CLIENT_SECRET) > 5;
+        $sc  = defined('CELLULANT_SERVICE_CODE')  && strlen(CELLULANT_SERVICE_CODE)  > 1;
+        $cb  = defined('CELLULANT_CALLBACK_URL')  && strpos(CELLULANT_CALLBACK_URL, 'http') === 0;
+        $cou = defined('CELLULANT_COUNTRY')       ? CELLULANT_COUNTRY  : 'KE';
+        $cur = defined('CELLULANT_CURRENCY')      ? CELLULANT_CURRENCY : 'KES';
+        $providerChecks[] = ['Cellulant API Key',       $ak ? 'Configured' : 'Not set or placeholder', $ak ? 'ok' : 'warning', $ak ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Cellulant Client ID',     $ci ? 'Configured' : 'Not set', $ci ? 'ok' : 'warning', $ci ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Cellulant Client Secret', $cs ? 'Configured' : 'Not set', $cs ? 'ok' : 'warning', $cs ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Service Code',             $sc ? (CELLULANT_SERVICE_CODE) : 'Not set — get from Tingg dashboard', $sc ? 'ok' : 'warning', $sc ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Callback URL',             $cb ? (CELLULANT_CALLBACK_URL) : 'Not set — set to callback_cellulant.php', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Country / Currency',       'Currently: ' . $cou . ' — Currency: ' . $cur . ' — 18+ African countries supported', 'ok', $cou . '/' . $cur];
         break;
 
     default:

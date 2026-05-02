@@ -44,6 +44,11 @@ Switch providers by changing one constant in `config.php` — no other code chan
 | **Airtel Money** | Kenya, Uganda, Tanzania, Rwanda, Zambia, DRC + more | STK-style push | `AIRTEL_CLIENT_ID`, `AIRTEL_CLIENT_SECRET` |
 | **DPO Pay** | 20+ African countries | Hosted checkout | `DPO_COMPANY_TOKEN`, `DPO_SERVICE_TYPE`, `DPO_REDIRECT_URL` |
 | **Ozow** | South Africa | Instant EFT | `OZOW_SITE_CODE`, `OZOW_PRIVATE_KEY`, `OZOW_API_KEY` |
+| **CinetPay** | Côte d'Ivoire, Senegal, Cameroon, Mali, Burkina Faso, Togo, Guinea + 8 more | Hosted checkout | `CINETPAY_API_KEY`, `CINETPAY_SITE_ID`, `CINETPAY_NOTIFY_URL` |
+| **Paymob** | Egypt, Morocco, Pakistan, UAE, Saudi Arabia, Oman, Kuwait | Hosted checkout | `PAYMOB_API_KEY`, `PAYMOB_INTEGRATION_ID`, `PAYMOB_IFRAME_ID` |
+| **Ecocash** | Zimbabwe, Eswatini, Lesotho | STK Push | `ECOCASH_MERCHANT_CODE`, `ECOCASH_MERCHANT_PIN`, `ECOCASH_MERCHANT_NUMBER` |
+| **Orange Money** | Côte d'Ivoire, Senegal, Mali, Burkina Faso, Guinea, Cameroon, Morocco, Tunisia + more | Hosted checkout | `ORANGE_CLIENT_ID`, `ORANGE_CLIENT_SECRET`, `ORANGE_MERCHANT_KEY` |
+| **Cellulant Tingg** | Kenya, Uganda, Tanzania, Rwanda, Nigeria, Ghana, Zambia, Zimbabwe, Mozambique, Ethiopia + 8 more | Hosted checkout | `CELLULANT_API_KEY`, `CELLULANT_CLIENT_ID`, `CELLULANT_SERVICE_CODE` |
 
 **STK / STK-style push** providers send a payment prompt directly to the customer's phone — no browser redirect needed.  
 **Hosted checkout** providers redirect the customer to a payment page in their browser.
@@ -59,6 +64,11 @@ define('PAYMENT_PROVIDER', 'mtnmomo');     // MTN Mobile Money push
 define('PAYMENT_PROVIDER', 'airtelmoney'); // Airtel Money push
 define('PAYMENT_PROVIDER', 'dpopay');      // DPO Pay — 20+ African countries
 define('PAYMENT_PROVIDER', 'ozow');        // South Africa instant EFT
+define('PAYMENT_PROVIDER', 'cinetpay');   // Francophone West/Central Africa (15+ countries)
+define('PAYMENT_PROVIDER', 'paymob');     // Egypt, Morocco, North Africa
+define('PAYMENT_PROVIDER', 'ecocash');    // Zimbabwe STK push
+define('PAYMENT_PROVIDER', 'orangemoney'); // West & North Africa (13+ countries)
+define('PAYMENT_PROVIDER', 'cellulant');  // Pan-African Tingg checkout (18+ countries)
 ```
 
 ---
@@ -440,6 +450,48 @@ Developer-only tool to simulate M-Pesa callbacks without making a real payment. 
 3. Set `OZOW_NOTIFY_URL` to `https://yourdomain.com/callback_ozow.php` — Ozow POSTs here when a payment resolves; the hash is verified against your Private Key
 4. Set `OZOW_SUCCESS_URL`, `OZOW_CANCEL_URL`, `OZOW_ERROR_URL` to the pages shown to the customer after each outcome
 5. Keep `OZOW_TEST = true` during development; set to `false` for live payments
+
+### CinetPay (Francophone Africa — 15+ countries)
+
+1. Sign up at [cinetpay.com](https://cinetpay.com/dashboard) and obtain your API Key and Site ID
+2. Set `PAYMENT_PROVIDER = 'cinetpay'` and fill in `CINETPAY_API_KEY`, `CINETPAY_SITE_ID`
+3. Set `CINETPAY_NOTIFY_URL` to `https://yourdomain.com/callback_cinetpay.php` — CinetPay POSTs here when a payment resolves; the callback verifies via CinetPay's check endpoint
+4. Set `CINETPAY_RETURN_URL` to the page shown to the customer after paying
+5. Set `CINETPAY_CURRENCY` to the appropriate code: `XOF` (West Africa), `XAF` (Central Africa), `CDF`, `GNF`, `KMF`, or `MGA`
+
+### Paymob (Egypt, Morocco & North Africa)
+
+1. Sign up at [accept.paymob.com](https://accept.paymob.com) and obtain your API Key
+2. Create an integration (card, mobile wallet, etc.) and copy the **Integration ID** and **iFrame ID** from the Paymob portal
+3. Set `PAYMENT_PROVIDER = 'paymob'` and fill in `PAYMOB_API_KEY`, `PAYMOB_INTEGRATION_ID`, `PAYMOB_IFRAME_ID`
+4. Set the Transaction Processed URL in the Paymob portal to `https://yourdomain.com/callback_paymob.php`
+5. Set `PAYMOB_HMAC_SECRET` to enable HMAC webhook signature verification
+6. Set `PAYMOB_CURRENCY` (`EGP`, `MAD`, `PKR`, `AED`, `SAR`, `OMR`) and `PAYMOB_COUNTRY` to match your market
+
+### Ecocash (Zimbabwe)
+
+1. Apply for an Ecocash Merchant API account at [developer.econet.co.zw](https://developer.econet.co.zw)
+2. Set `PAYMENT_PROVIDER = 'ecocash'` and fill in `ECOCASH_MERCHANT_CODE`, `ECOCASH_MERCHANT_PIN`, `ECOCASH_MERCHANT_NUMBER`
+3. Set `ECOCASH_CALLBACK_URL` to `https://yourdomain.com/callback_ecocash.php` — Ecocash POSTs the transaction result here
+4. Set `ECOCASH_CURRENCY` (`USD`, `ZWL`, `SZL`, `LSL`) to match the customer's country
+5. Set `ECOCASH_ENV` to `'sandbox'` for testing and `'production'` for live payments
+
+### Orange Money (West & North Africa — 13+ countries)
+
+1. Register at [developer.orange.com](https://developer.orange.com/myapps) and create an application for Orange Money Web Pay
+2. Set `PAYMENT_PROVIDER = 'orangemoney'` and fill in `ORANGE_CLIENT_ID`, `ORANGE_CLIENT_SECRET`, `ORANGE_MERCHANT_KEY`
+3. Set `ORANGE_NOTIFY_URL` to `https://yourdomain.com/callback_orangemoney.php` — Orange Money POSTs notifications here
+4. Set `ORANGE_RETURN_URL` to the page shown to the customer after paying
+5. Set `ORANGE_COUNTRY` to the 2-letter country code: `ci`, `sn`, `ml`, `bf`, `gn`, `gw`, `cm`, `mg`, `sle`, `lr`, `ma`, `tn`, `jo`
+6. Set `ORANGE_CURRENCY` to match (`XOF`, `XAF`, `GNF`, `SLL`, `MAD`, `TND`, `JOD`)
+
+### Cellulant Tingg (Pan-African — 18+ countries)
+
+1. Sign up at [app.tingg.africa](https://app.tingg.africa) to get your API Key, Client ID, Client Secret, and Service Code
+2. Set `PAYMENT_PROVIDER = 'cellulant'` and fill in `CELLULANT_API_KEY`, `CELLULANT_CLIENT_ID`, `CELLULANT_CLIENT_SECRET`, `CELLULANT_SERVICE_CODE`
+3. Set `CELLULANT_CALLBACK_URL` to `https://yourdomain.com/callback_cellulant.php` — Tingg POSTs payment results here and also redirects customers to this URL
+4. Set `CELLULANT_COUNTRY` (ISO 3166-1 alpha-2: `KE`, `UG`, `TZ`, `RW`, `NG`, `GH`, `ZM`, `ZW`, `MW`, `MZ`, `ET`, `CI`, `CM`, `SN`, `ZA`, `CD`, `MG`, `BW`, `AO`)
+5. Set `CELLULANT_CURRENCY` to the corresponding currency code for your country
 
 ---
 

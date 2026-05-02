@@ -5,8 +5,9 @@
 
 // ------------------------------------------------------------------
 // ACTIVE PROVIDER
-// Choose one: 'tinypesa' | 'daraja' | 'pesapal' | 'flutterwave'
-//             'paystack' | 'mtnmomo' | 'airtelmoney' | 'dpopay' | 'ozow'
+// Choose one: 'tinypesa' | 'daraja'   | 'pesapal'     | 'flutterwave' | 'paystack'
+//             'mtnmomo' | 'airtelmoney' | 'dpopay'   | 'ozow'        | 'cinetpay'
+//             'paymob'  | 'ecocash'  | 'orangemoney' | 'cellulant'
 // ------------------------------------------------------------------
 define('PAYMENT_PROVIDER', 'tinypesa');
 
@@ -115,3 +116,74 @@ define('TINYPESA_URL',     'https://tinypesa.com/api/v1/express/initialize');
 // define('OZOW_ERROR_URL',    'https://yourdomain.com/');
 // define('OZOW_NOTIFY_URL',   'https://yourdomain.com/callback_ozow.php');
 // define('OZOW_TEST',         true);   // set to false for live payments
+
+// ------------------------------------------------------------------
+// CINETPAY  (Hosted checkout — requires PAYMENT_PROVIDER = 'cinetpay')
+// 15+ Francophone African countries: CI, SN, CM, ML, BF, TG, GN, CD, CG,
+// MG, KM, CF, TD, GA, GQ. Currencies: XOF, XAF, CDF, GNF, KMF, MGA.
+// Get credentials from: https://cinetpay.com/dashboard
+// Set notify URL to: callback_cinetpay.php
+// ------------------------------------------------------------------
+// define('CINETPAY_API_KEY',    'YOUR_CINETPAY_API_KEY');
+// define('CINETPAY_SITE_ID',    'YOUR_CINETPAY_SITE_ID');
+// define('CINETPAY_NOTIFY_URL', 'https://yourdomain.com/callback_cinetpay.php');
+// define('CINETPAY_RETURN_URL', 'https://yourdomain.com/');
+// define('CINETPAY_CURRENCY',   'XOF');      // XOF | XAF | CDF | GNF | KMF | MGA
+// define('CINETPAY_CHANNELS',   'ALL');      // ALL | MOBILE_MONEY | CREDIT_CARD | WALLET
+
+// ------------------------------------------------------------------
+// PAYMOB  (Hosted checkout — requires PAYMENT_PROVIDER = 'paymob')
+// Egypt, Morocco, Pakistan, UAE, Saudi Arabia, Oman, Kuwait.
+// Get credentials from: https://accept.paymob.com/portal2/en/settings
+// Webhook: Developers → Transaction Processed URL → callback_paymob.php
+// ------------------------------------------------------------------
+// define('PAYMOB_API_KEY',        'YOUR_PAYMOB_API_KEY');
+// define('PAYMOB_INTEGRATION_ID', 'YOUR_INTEGRATION_ID');   // numeric
+// define('PAYMOB_IFRAME_ID',      'YOUR_IFRAME_ID');         // numeric
+// define('PAYMOB_CURRENCY',       'EGP');    // EGP | MAD | PKR | AED | SAR | OMR
+// define('PAYMOB_COUNTRY',        'EG');     // ISO 3166-1 alpha-2
+// define('PAYMOB_HMAC_SECRET',    'YOUR_HMAC_SECRET');       // for webhook verification
+
+// ------------------------------------------------------------------
+// ECOCASH  (STK Push — requires PAYMENT_PROVIDER = 'ecocash')
+// Zimbabwe (USD/ZWL), Eswatini (SZL), Lesotho (LSL).
+// Apply for Merchant API at: https://developer.econet.co.zw
+// Callback URL set to: callback_ecocash.php
+// ------------------------------------------------------------------
+// define('ECOCASH_MERCHANT_CODE',   'YOUR_MERCHANT_CODE');
+// define('ECOCASH_MERCHANT_PIN',    'YOUR_MERCHANT_PIN');
+// define('ECOCASH_MERCHANT_NUMBER', 'YOUR_MERCHANT_NUMBER');  // e.g. 0776000000
+// define('ECOCASH_CALLBACK_URL',    'https://yourdomain.com/callback_ecocash.php');
+// define('ECOCASH_CURRENCY',        'USD');  // USD | ZWL | SZL | LSL
+// define('ECOCASH_ENV',             'sandbox'); // 'sandbox' | 'production'
+
+// ------------------------------------------------------------------
+// ORANGE MONEY  (Hosted checkout — requires PAYMENT_PROVIDER = 'orangemoney')
+// Côte d'Ivoire (ci), Senegal (sn), Mali (ml), Burkina Faso (bf),
+// Guinea (gn), Guinea-Bissau (gw), Cameroon (cm), Madagascar (mg),
+// Sierra Leone (sle), Liberia (lr), Morocco (ma), Tunisia (tn), Jordan (jo).
+// Register at: https://developer.orange.com/myapps
+// Set notify URL to: callback_orangemoney.php
+// ------------------------------------------------------------------
+// define('ORANGE_CLIENT_ID',     'YOUR_ORANGE_CLIENT_ID');
+// define('ORANGE_CLIENT_SECRET', 'YOUR_ORANGE_CLIENT_SECRET');
+// define('ORANGE_MERCHANT_KEY',  'YOUR_ORANGE_MERCHANT_KEY');
+// define('ORANGE_NOTIFY_URL',    'https://yourdomain.com/callback_orangemoney.php');
+// define('ORANGE_RETURN_URL',    'https://yourdomain.com/');
+// define('ORANGE_COUNTRY',       'ci');   // 2-letter country code (see list above)
+// define('ORANGE_CURRENCY',      'XOF');  // XOF | XAF | GNF | SLL | MAD | TND | JOD
+
+// ------------------------------------------------------------------
+// CELLULANT / TINGG  (Hosted checkout — requires PAYMENT_PROVIDER = 'cellulant')
+// 18+ African countries: KE, UG, TZ, RW, NG, GH, ZM, ZW, MW, MZ, ET,
+// CI, CM, SN, ZA, CD, MG, BW, AO. Mobile money + cards + bank transfer.
+// Register at: https://app.tingg.africa
+// Set callback URL to: callback_cellulant.php
+// ------------------------------------------------------------------
+// define('CELLULANT_API_KEY',       'YOUR_CELLULANT_API_KEY');
+// define('CELLULANT_CLIENT_ID',     'YOUR_CELLULANT_CLIENT_ID');
+// define('CELLULANT_CLIENT_SECRET', 'YOUR_CELLULANT_CLIENT_SECRET');
+// define('CELLULANT_SERVICE_CODE',  'YOUR_SERVICE_CODE');   // from Tingg dashboard
+// define('CELLULANT_CALLBACK_URL',  'https://yourdomain.com/callback_cellulant.php');
+// define('CELLULANT_CURRENCY',      'KES');  // currency for your country
+// define('CELLULANT_COUNTRY',       'KE');   // ISO 3166-1 alpha-2

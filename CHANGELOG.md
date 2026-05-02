@@ -7,6 +7,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-05-02
+
+### Added
+- **CinetPay provider** (`providers/cinetpay.php`) — hosted checkout covering 15+ Francophone African countries (Côte d'Ivoire, Senegal, Cameroon, Mali, Burkina Faso, Togo, Guinea, DRC, Republic of Congo, Madagascar, Comoros, CAR, Chad, Gabon, Equatorial Guinea); currencies XOF/XAF/CDF/GNF/KMF/MGA; callback with transaction verification in `callback_cinetpay.php`
+- **Paymob provider** (`providers/paymob.php`) — 3-step hosted checkout (auth → order → payment key → iframe) covering Egypt, Morocco, Pakistan, UAE, Saudi Arabia, Oman, Kuwait; HMAC-SHA512 webhook verification in `callback_paymob.php`
+- **Ecocash provider** (`providers/ecocash.php`) — STK-style merchant payment push for Zimbabwe (USD/ZWL), Eswatini (SZL), Lesotho (LSL); callback in `callback_ecocash.php`
+- **Orange Money provider** (`providers/orangemoney.php`) — OAuth2 hosted checkout covering 13+ countries (Côte d'Ivoire, Senegal, Mali, Burkina Faso, Guinea, Guinea-Bissau, Cameroon, Madagascar, Sierra Leone, Liberia, Morocco, Tunisia, Jordan); callback in `callback_orangemoney.php`
+- **Cellulant Tingg provider** (`providers/cellulant.php`) — OAuth2 hosted checkout covering 18+ African countries (KE, UG, TZ, RW, NG, GH, ZM, ZW, MW, MZ, ET, CI, CM, SN, ZA, CD, MG, BW, AO); mobile money + cards + bank transfer in one checkout; callback in `callback_cellulant.php`
+- SVG logos for all 5 new providers in `logos/`
+- `index.php` `$pCfg` entries for all 5 new providers with correct currencies, chips, and brand gradients
+- `health.php` configuration checks for all 5 new providers
+- `admin.php` PHP and JS provider name/logo maps updated to include all 14 providers
+- `config.example.php` updated with all 5 new provider sections including full documentation of required/optional constants
+- README.md provider table, quick-config block, and setup guide sections updated for all 5 new providers
+
+### Coverage after this release (14 providers)
+- **East Africa**: TinyPesa, Daraja, PesaPal, Flutterwave, Paystack, MTN MoMo, Airtel Money, Cellulant Tingg
+- **West Africa**: Flutterwave, Paystack, MTN MoMo, Airtel Money, CinetPay, Orange Money, Cellulant Tingg
+- **Central Africa**: CinetPay, MTN MoMo, Airtel Money, Cellulant Tingg
+- **North Africa**: Paymob (Egypt, Morocco), Orange Money (Morocco, Tunisia), Flutterwave
+- **Southern Africa**: Ozow (ZA), DPO Pay (20+ countries), Ecocash (ZW/SZ/LS), Airtel Money, Cellulant Tingg
+
 ## [1.6.0] — 2026-05-02
 
 ### Added
