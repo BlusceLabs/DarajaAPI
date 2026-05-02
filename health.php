@@ -205,6 +205,9 @@ $providerLabels = [
     'orangemoney' => ['Orange Money',    'redirect', '🌐'],
     'cellulant'   => ['Cellulant Tingg', 'redirect', '🌐'],
     'evcplus'     => ['EVC Plus (Somalia)', 'stk',      '📱'],
+    'wave'        => ['Wave',              'redirect', '🌐'],
+    'telebirr'    => ['Telebirr',          'redirect', '🌐'],
+    'moovafrica'  => ['Moov Africa/Flooz', 'stk',      '📱'],
 ];
 
 if ($configExists) {
@@ -411,6 +414,44 @@ switch ($activeProvider) {
         $providerChecks[] = ['Service Code',             $sc ? (CELLULANT_SERVICE_CODE) : 'Not set — get from Tingg dashboard', $sc ? 'ok' : 'warning', $sc ? 'Set' : 'Not Set'];
         $providerChecks[] = ['Callback URL',             $cb ? (CELLULANT_CALLBACK_URL) : 'Not set — set to callback_cellulant.php', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
         $providerChecks[] = ['Country / Currency',       'Currently: ' . $cou . ' — Currency: ' . $cur . ' — 18+ African countries supported', 'ok', $cou . '/' . $cur];
+        break;
+
+    case 'wave':
+        $ak  = defined('WAVE_API_KEY')      && strlen(WAVE_API_KEY)      > 5 && WAVE_API_KEY !== 'YOUR_WAVE_API_KEY';
+        $su  = defined('WAVE_SUCCESS_URL')  && strpos(WAVE_SUCCESS_URL,  'http') === 0;
+        $eu  = defined('WAVE_ERROR_URL')    && strpos(WAVE_ERROR_URL,    'http') === 0;
+        $cb  = defined('WAVE_CALLBACK_URL') && strpos(WAVE_CALLBACK_URL, 'http') === 0;
+        $cur = defined('WAVE_CURRENCY')     ? WAVE_CURRENCY : 'XOF';
+        $providerChecks[] = ['Wave API Key',   $ak ? 'Configured' : 'Not set or placeholder — get from Wave Business dashboard', $ak ? 'ok' : 'warning', $ak ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Success URL',    $su ? WAVE_SUCCESS_URL  : 'Not set', $su ? 'ok' : 'warning', $su ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Error URL',      $eu ? WAVE_ERROR_URL    : 'Not set', $eu ? 'ok' : 'warning', $eu ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Callback URL',   $cb ? WAVE_CALLBACK_URL : 'Not set — set to callback_wave.php', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Currency',       'Currently: ' . $cur . ' — Countries: SN/CI/ML/BF (XOF), CM (XAF), UG (UGX), ZM (ZMW)', 'ok', $cur];
+        break;
+
+    case 'telebirr':
+        $ai  = defined('TELEBIRR_APP_ID')     && strlen(TELEBIRR_APP_ID)     > 3;
+        $ak  = defined('TELEBIRR_APP_KEY')    && strlen(TELEBIRR_APP_KEY)    > 5 && TELEBIRR_APP_KEY !== 'YOUR_APP_KEY';
+        $sc  = defined('TELEBIRR_SHORT_CODE') && strlen(TELEBIRR_SHORT_CODE) > 2;
+        $pk  = defined('TELEBIRR_PUBLIC_KEY') && strlen(TELEBIRR_PUBLIC_KEY) > 20;
+        $nu  = defined('TELEBIRR_NOTIFY_URL') && strpos(TELEBIRR_NOTIFY_URL, 'http') === 0;
+        $providerChecks[] = ['App ID',      $ai ? 'Configured' : 'Not set — get from Ethiotelecom developer portal', $ai ? 'ok' : 'warning', $ai ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['App Key',     $ak ? 'Configured' : 'Not set or placeholder', $ak ? 'ok' : 'warning', $ak ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Short Code',  $sc ? TELEBIRR_SHORT_CODE : 'Not set', $sc ? 'ok' : 'warning', $sc ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Public Key',  $pk ? 'Configured (' . strlen(TELEBIRR_PUBLIC_KEY) . ' chars)' : 'Not set — copy RSA public key from Telebirr developer portal', $pk ? 'ok' : 'warning', $pk ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Notify URL',  $nu ? TELEBIRR_NOTIFY_URL : 'Not set — set to callback_telebirr.php', $nu ? 'ok' : 'warning', $nu ? 'Set' : 'Not Set'];
+        break;
+
+    case 'moovafrica':
+        $ak  = defined('MOOV_API_KEY')      && strlen(MOOV_API_KEY)      > 5 && MOOV_API_KEY !== 'YOUR_MOOV_API_KEY';
+        $as  = defined('MOOV_API_SECRET')   && strlen(MOOV_API_SECRET)   > 5;
+        $cb  = defined('MOOV_CALLBACK_URL') && strpos(MOOV_CALLBACK_URL, 'http') === 0;
+        $cou = defined('MOOV_COUNTRY')      ? MOOV_COUNTRY  : 'TG';
+        $cur = defined('MOOV_CURRENCY')     ? MOOV_CURRENCY : 'XOF';
+        $providerChecks[] = ['Moov API Key',    $ak ? 'Configured' : 'Not set or placeholder — get from Moov Africa developer portal', $ak ? 'ok' : 'warning', $ak ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Moov API Secret', $as ? 'Configured' : 'Not set', $as ? 'ok' : 'warning', $as ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Callback URL',    $cb ? MOOV_CALLBACK_URL : 'Not set — set to callback_moovafrica.php', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Country / Currency', 'Currently: ' . $cou . ' — Currency: ' . $cur . ' — 9 countries (TG/BJ/NE/BF/CI/TD/GA/CD/MG)', 'ok', $cou . '/' . $cur];
         break;
 
     default:

@@ -199,3 +199,40 @@ define('TINYPESA_URL',     'https://tinypesa.com/api/v1/express/initialize');
 // define('EVCPLUS_API_KEY',       'YOUR_API_KEY');        // from Hormuud portal
 // define('EVCPLUS_CURRENCY',      'USD');    // USD (default) or SOS
 // define('EVCPLUS_ENV',           'production');  // 'sandbox' or 'production'
+
+// WAVE  (Hosted checkout — requires PAYMENT_PROVIDER = 'wave')
+// West & Central Africa: Senegal (XOF), Côte d'Ivoire (XOF), Mali (XOF),
+// Burkina Faso (XOF), Cameroon (XAF), Uganda (UGX), Zambia (ZMW).
+// Register at: https://www.wave.com/en/business/
+// Webhooks are HMAC-SHA256 signed using your API key.
+// ------------------------------------------------------------------
+// define('WAVE_API_KEY',       'YOUR_WAVE_API_KEY');
+// define('WAVE_SUCCESS_URL',   'https://yourdomain.com/?payment=success');
+// define('WAVE_ERROR_URL',     'https://yourdomain.com/?payment=error');
+// define('WAVE_CALLBACK_URL',  'https://yourdomain.com/callback_wave.php');
+// define('WAVE_CURRENCY',      'XOF');  // XOF/XAF/UGX/ZMW
+
+// TELEBIRR / ETHIOTELECOM  (Hosted checkout — requires PAYMENT_PROVIDER = 'telebirr')
+// Ethiopia only — Ethiotelecom Telebirr, 40M+ users.
+// Register at: https://developer.ethiotelecom.et
+// Payload is RSA-OAEP encrypted using Telebirr's public key.
+// ------------------------------------------------------------------
+// define('TELEBIRR_APP_ID',       'YOUR_APP_ID');
+// define('TELEBIRR_APP_KEY',      'YOUR_APP_KEY');
+// define('TELEBIRR_SHORT_CODE',   'YOUR_MERCHANT_SHORT_CODE');
+// define('TELEBIRR_PUBLIC_KEY',   'BASE64_OR_PEM_PUBLIC_KEY_FROM_PORTAL');
+// define('TELEBIRR_NOTIFY_URL',   'https://yourdomain.com/callback_telebirr.php');
+// define('TELEBIRR_REDIRECT_URL', 'https://yourdomain.com/?payment=done');  // optional
+// define('TELEBIRR_ENV',          'production');  // 'sandbox' or 'production'
+
+// MOOV AFRICA / FLOOZ  (STK push — requires PAYMENT_PROVIDER = 'moovafrica')
+// 9 countries: Togo (TG/XOF), Bénin (BJ/XOF), Niger (NE/XOF),
+// Burkina Faso (BF/XOF), Côte d'Ivoire (CI/XOF), Chad (TD/XAF),
+// Gabon (GA/XAF), DR Congo (CD/CDF), Madagascar (MG/MGA).
+// Register at: https://developer.moov-africa.com
+// ------------------------------------------------------------------
+// define('MOOV_API_KEY',      'YOUR_MOOV_API_KEY');
+// define('MOOV_API_SECRET',   'YOUR_MOOV_API_SECRET');
+// define('MOOV_CALLBACK_URL', 'https://yourdomain.com/callback_moovafrica.php');
+// define('MOOV_COUNTRY',      'TG');   // ISO 3166-1 alpha-2 (TG/BJ/NE/BF/CI/TD/GA/CD/MG)
+// define('MOOV_CURRENCY',     'XOF');  // XOF/XAF/CDF/MGA

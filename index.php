@@ -271,6 +271,66 @@ $pCfg = [
         'flow'         => 'stk',
     ],
 
+    // ── West Africa ───────────────────────────────────────────────────────────
+    'wave' => [
+        'name'         => 'Pay with Wave',
+        'subtitle'     => 'Mobile Money — Senegal, Côte d\'Ivoire &amp; 5 more',
+        'logo'         => '/logos/wave.svg',
+        'grad_from'    => '#1B69C9', 'grad_to' => '#0EA5E9', 'text_dark' => false,
+        'phone_label'  => 'Wave Number', 'phone_optional' => true,
+        'phone_ph'     => 'e.g. 77 123 45 67',
+        'phone_hint'   => 'Your Wave-registered number (optional — you can scan the QR on the next page).',
+        'phone_err'    => 'Please enter a valid phone number.',
+        'phone_strict' => false,
+        'currency'     => 'XOF', 'symbol' => 'CFA',
+        'amount_min'   => 100, 'amount_max' => 5000000,
+        'chips'        => [500, 1000, 2500, 5000, 10000, 25000],
+        'ref_hint'     => 'Order reference.',
+        'push_msg'     => '',
+        'secure_badge' => 'Secured by Wave',
+        'flow'         => 'redirect',
+    ],
+
+    // ── Ethiopia ──────────────────────────────────────────────────────────────
+    'telebirr' => [
+        'name'         => 'Pay with Telebirr',
+        'subtitle'     => 'Ethiotelecom Mobile Wallet — Ethiopia',
+        'logo'         => '/logos/telebirr.svg',
+        'grad_from'    => '#007A3D', 'grad_to' => '#009A4E', 'text_dark' => false,
+        'phone_label'  => 'Telebirr Number', 'phone_optional' => true,
+        'phone_ph'     => 'e.g. 0912 345 678',
+        'phone_hint'   => 'Your Ethiotelecom Telebirr number (optional).',
+        'phone_err'    => 'Please enter a valid Ethiopian phone number.',
+        'phone_strict' => false,
+        'currency'     => 'ETB', 'symbol' => 'Br',
+        'amount_min'   => 1, 'amount_max' => 50000,
+        'chips'        => [50, 100, 250, 500, 1000, 2500],
+        'ref_hint'     => 'Order reference (max 20 chars).',
+        'push_msg'     => '',
+        'secure_badge' => 'Secured by Telebirr / Ethiotelecom',
+        'flow'         => 'redirect',
+    ],
+
+    // ── Moov Africa / Flooz (9 countries) ────────────────────────────────────
+    'moovafrica' => [
+        'name'         => 'Pay with Flooz',
+        'subtitle'     => 'Moov Africa Mobile Money — 9 African Countries',
+        'logo'         => '/logos/moovafrica.svg',
+        'grad_from'    => '#E8000D', 'grad_to' => '#B80009', 'text_dark' => false,
+        'phone_label'  => 'Flooz Number', 'phone_optional' => false,
+        'phone_ph'     => 'e.g. 90 123 456',
+        'phone_hint'   => 'Your Moov Africa Flooz mobile number.',
+        'phone_err'    => 'Please enter a valid mobile number.',
+        'phone_strict' => false,
+        'currency'     => 'XOF', 'symbol' => 'CFA',
+        'amount_min'   => 100, 'amount_max' => 1000000,
+        'chips'        => [500, 1000, 2500, 5000, 10000, 25000],
+        'ref_hint'     => 'Order reference.',
+        'push_msg'     => 'You will receive a Flooz USSD prompt on your Moov phone. Approve it to complete payment.',
+        'secure_badge' => 'Secured by Moov Africa / Flooz',
+        'flow'         => 'stk',
+    ],
+
     // ── Pan-African (18+ countries) ────────────────────────────────────────────
     'cellulant' => [
         'name'         => 'Pay with Tingg',
@@ -577,6 +637,8 @@ $jsAmountMax      = $amountMax;
         .progress-fill { height: 100%; background: linear-gradient(90deg, <?= $c['grad_from'] ?>, <?= $c['grad_to'] ?>); border-radius: 2px; animation: prog 60s linear forwards; }
         @keyframes prog { from { width: 0 } to { width: 100% } }
         .progress-label { font-size: 11.5px; color: var(--text-4); text-align: center; }
+        .cancel-poll-btn { display: block; margin: 8px auto 0; background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 14px; font-size: 11.5px; color: var(--text-3); cursor: pointer; transition: background .15s, color .15s; }
+        .cancel-poll-btn:hover { background: var(--surface-alt); color: var(--text); }
 
         .card-footer {
             border-top: 1px solid var(--border-light);
@@ -673,7 +735,7 @@ $jsAmountMax      = $amountMax;
                 <label for="reference">Account Reference <span style="font-weight:400;text-transform:none;color:var(--text-4)">(optional)</span></label>
                 <div class="input-wrap">
                     <span class="input-prefix">#</span>
-                    <input type="text" id="reference" placeholder="e.g. Invoice-001 or Order ID" maxlength="12">
+                    <input type="text" id="reference" placeholder="e.g. Invoice-001 or Order ID" maxlength="20">
                 </div>
                 <p class="hint"><?= htmlspecialchars($c['ref_hint']) ?></p>
             </div>
@@ -689,6 +751,7 @@ $jsAmountMax      = $amountMax;
         <div class="progress-wrap" id="progressWrap">
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             <p class="progress-label">Waiting for payment confirmation…</p>
+            <button type="button" id="cancelPoll" class="cancel-poll-btn">Cancel</button>
         </div>
     </div>
 
@@ -796,6 +859,13 @@ $jsAmountMax      = $amountMax;
     refToggle.addEventListener('click', () => {
         const open = refField.classList.toggle('show');
         refToggle.textContent = open ? '- Remove account reference' : '+ Add account reference';
+    });
+
+    document.getElementById('cancelPoll').addEventListener('click', () => {
+        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+        resetProgress();
+        showMessage('error', 'Cancelled', 'Payment confirmation cancelled. You can try again below.');
+        setLoading(false);
     });
 
     document.querySelectorAll('.chip').forEach(chip => {

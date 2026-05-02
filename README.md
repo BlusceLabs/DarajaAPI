@@ -50,6 +50,9 @@ Switch providers by changing one constant in `config.php` — no other code chan
 | **Orange Money** | Côte d'Ivoire, Senegal, Mali, Burkina Faso, Guinea, Cameroon, Morocco, Tunisia + more | Hosted checkout | `ORANGE_CLIENT_ID`, `ORANGE_CLIENT_SECRET`, `ORANGE_MERCHANT_KEY` |
 | **Cellulant Tingg** | Kenya, Uganda, Tanzania, Rwanda, Nigeria, Ghana, Zambia, Zimbabwe, Mozambique, Ethiopia + 8 more | Hosted checkout | `CELLULANT_API_KEY`, `CELLULANT_CLIENT_ID`, `CELLULANT_SERVICE_CODE` |
 | **EVC Plus** | Somalia (Hormuud Telesom — Mogadishu & south); compatible with Telesom Zaad (Somaliland) | STK Push | `EVCPLUS_MERCHANT_UID`, `EVCPLUS_API_USER_ID`, `EVCPLUS_API_KEY` |
+| **Wave** | Senegal, Côte d'Ivoire, Mali, Burkina Faso, Cameroon, Uganda, Zambia | Hosted checkout | `WAVE_API_KEY`, `WAVE_SUCCESS_URL`, `WAVE_ERROR_URL`, `WAVE_CALLBACK_URL` |
+| **Telebirr** | Ethiopia — Ethiotelecom, 40M+ users | Hosted checkout | `TELEBIRR_APP_ID`, `TELEBIRR_APP_KEY`, `TELEBIRR_SHORT_CODE`, `TELEBIRR_PUBLIC_KEY` |
+| **Moov Africa / Flooz** | Togo, Bénin, Niger, Burkina Faso, Côte d'Ivoire, Chad, Gabon, DR Congo, Madagascar | STK Push | `MOOV_API_KEY`, `MOOV_API_SECRET`, `MOOV_CALLBACK_URL` |
 
 **STK / STK-style push** providers send a payment prompt directly to the customer's phone — no browser redirect needed.  
 **Hosted checkout** providers redirect the customer to a payment page in their browser.
@@ -70,7 +73,10 @@ define('PAYMENT_PROVIDER', 'paymob');     // Egypt, Morocco, North Africa
 define('PAYMENT_PROVIDER', 'ecocash');    // Zimbabwe STK push
 define('PAYMENT_PROVIDER', 'orangemoney'); // West & North Africa (13+ countries)
 define('PAYMENT_PROVIDER', 'cellulant');  // Pan-African Tingg checkout (18+ countries)
-define('PAYMENT_PROVIDER', 'evcplus');   // Somalia — Hormuud EVC Plus STK push
+define('PAYMENT_PROVIDER', 'evcplus');    // Somalia — Hormuud EVC Plus STK push
+define('PAYMENT_PROVIDER', 'wave');       // Wave — West Africa (SN/CI/ML/BF/CM/UG/ZM)
+define('PAYMENT_PROVIDER', 'telebirr');  // Ethiopia — Ethiotelecom Telebirr
+define('PAYMENT_PROVIDER', 'moovafrica'); // Moov Africa / Flooz — 9 countries
 ```
 
 ---
@@ -494,6 +500,39 @@ Developer-only tool to simulate M-Pesa callbacks without making a real payment. 
 3. Set `CELLULANT_CALLBACK_URL` to `https://yourdomain.com/callback_cellulant.php` — Tingg POSTs payment results here and also redirects customers to this URL
 4. Set `CELLULANT_COUNTRY` (ISO 3166-1 alpha-2: `KE`, `UG`, `TZ`, `RW`, `NG`, `GH`, `ZM`, `ZW`, `MW`, `MZ`, `ET`, `CI`, `CM`, `SN`, `ZA`, `CD`, `MG`, `BW`, `AO`)
 5. Set `CELLULANT_CURRENCY` to the corresponding currency code for your country
+
+### EVC Plus / Hormuud (Somalia)
+
+1. Contact Hormuud Telesom merchant services at [hormuud.com](https://hormuud.com) to get your Merchant UID, API User ID, and API Key
+2. Set `PAYMENT_PROVIDER = 'evcplus'` and fill in `EVCPLUS_MERCHANT_UID`, `EVCPLUS_API_USER_ID`, `EVCPLUS_API_KEY`
+3. Set `EVCPLUS_CURRENCY` to `USD` (default) or `SOS`
+4. Phone numbers are normalised automatically to `252XXXXXXXXX` international format
+5. EVC Plus is **synchronous** — the payment result is returned immediately; no callback polling needed
+
+### Wave (West & Central Africa — 7 countries)
+
+1. Sign up for Wave Business at [wave.com/en/business](https://www.wave.com/en/business/)
+2. Set `PAYMENT_PROVIDER = 'wave'` and set `WAVE_API_KEY` from your Wave developer dashboard
+3. Set `WAVE_SUCCESS_URL` to the page shown after a successful payment
+4. Set `WAVE_ERROR_URL` to the page shown after a cancelled or failed payment
+5. Set `WAVE_CALLBACK_URL` to `https://yourdomain.com/callback_wave.php` — Wave POSTs HMAC-SHA256 signed notifications here
+6. Set `WAVE_CURRENCY` to `XOF` (SN/CI/ML/BF), `XAF` (CM), `UGX` (UG), or `ZMW` (ZM)
+
+### Telebirr (Ethiopia)
+
+1. Register at [developer.ethiotelecom.et](https://developer.ethiotelecom.et) and create a merchant application
+2. Set `PAYMENT_PROVIDER = 'telebirr'` and fill in `TELEBIRR_APP_ID`, `TELEBIRR_APP_KEY`, `TELEBIRR_SHORT_CODE`
+3. Copy the RSA public key from your Telebirr developer portal and set as `TELEBIRR_PUBLIC_KEY` (PEM or base64)
+4. Set `TELEBIRR_NOTIFY_URL` to `https://yourdomain.com/callback_telebirr.php`
+5. Optionally set `TELEBIRR_REDIRECT_URL` to the page shown to the customer after paying
+
+### Moov Africa / Flooz (9 countries)
+
+1. Register at [developer.moov-africa.com](https://developer.moov-africa.com) and obtain your API credentials
+2. Set `PAYMENT_PROVIDER = 'moovafrica'` and fill in `MOOV_API_KEY`, `MOOV_API_SECRET`
+3. Set `MOOV_CALLBACK_URL` to `https://yourdomain.com/callback_moovafrica.php`
+4. Set `MOOV_COUNTRY` to your ISO country code: `TG`, `BJ`, `NE`, `BF`, `CI`, `TD`, `GA`, `CD`, or `MG`
+5. Set `MOOV_CURRENCY` to `XOF` (TG/BJ/NE/BF/CI), `XAF` (TD/GA), `CDF` (CD), or `MGA` (MG)
 
 ---
 

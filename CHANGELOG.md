@@ -7,6 +7,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.9.0] — 2026-05-02
+
+### Added
+- **Wave provider** (`providers/wave.php`) — hosted checkout for West & Central Africa; countries: Senegal, Côte d'Ivoire, Mali, Burkina Faso, Cameroon, Uganda, Zambia; HMAC-SHA256 webhook verification in `callback_wave.php`
+- **Telebirr provider** (`providers/telebirr.php`) — Ethiopia (Ethiotelecom, 40M+ users); RSA-OAEP signed payment initiation; toPayUrl redirect flow; callback in `callback_telebirr.php`
+- **Moov Africa / Flooz provider** (`providers/moovafrica.php`) — 9 countries: Togo, Bénin, Niger, Burkina Faso, Côte d'Ivoire, Chad, Gabon, DR Congo, Madagascar; STK-style push; OAuth2 auth; callback in `callback_moovafrica.php`
+- SVG logos for Wave, Telebirr, Moov Africa in `logos/`
+- All 3 new providers wired into `index.php`, `health.php`, `admin.php`, `config.example.php`, README
+
+### Fixed
+- Reference field `maxlength` increased from 12 to 20 characters to match provider requirements
+- Cancel button added to STK polling progress bar (stops polling if user wants to retry)
+- `admin.php` JavaScript `providerNames` map was missing `evcplus` entry — corrected
+
 ## [1.8.0] — 2026-05-02
 
 ### Added

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#007A3D"/>
+      <stop offset="100%" stop-color="#009A4E"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="60" rx="10" fill="url(#g)"/>
+  <!-- Ethiopian star + circle motif -->
+  <circle cx="28" cy="30" r="15" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <!-- T for Telebirr -->
+  <text x="21" y="37" font-family="Arial Black, Arial, sans-serif" font-size="18" font-weight="900" fill="#FCDD09">T</text>
+  <!-- Wordmark -->
+  <text x="50" y="36" font-family="Arial Black, Arial, sans-serif" font-size="18" font-weight="900" fill="#ffffff" letter-spacing="0.5">telebirr</text>
+  <!-- Tagline -->
+  <text x="50" y="51" font-family="Arial, sans-serif" font-size="8" fill="rgba(255,255,255,0.65)" letter-spacing="0.8">ETHIOTELECOM · ETHIOPIA</text>
+</svg>

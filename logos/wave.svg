@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B69C9"/>
+      <stop offset="100%" stop-color="#0EA5E9"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="60" rx="10" fill="url(#g)"/>
+  <!-- Wave icon: three arcs -->
+  <path d="M14 36 Q20 22 26 36 Q32 50 38 36" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M20 36 Q26 24 32 36 Q38 48 44 36" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Wordmark -->
+  <text x="56" y="37" font-family="Arial Black, Arial, sans-serif" font-size="22" font-weight="900" fill="#fff" letter-spacing="0.5">Wave</text>
+  <!-- Tagline -->
+  <text x="56" y="51" font-family="Arial, sans-serif" font-size="8" fill="rgba(255,255,255,0.65)" letter-spacing="0.8">MOBILE MONEY · WEST AFRICA</text>
+</svg>
