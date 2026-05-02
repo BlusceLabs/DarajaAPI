@@ -1,0 +1,33 @@
+{
+    "name": "your-username/mpesa-stk-push-php",
+    "description": "Plain PHP STK Push integration for M-Pesa via TinyPesa API — no framework, no Composer required.",
+    "keywords": [
+        "mpesa",
+        "m-pesa",
+        "stk-push",
+        "lipa-na-mpesa",
+        "safaricom",
+        "daraja",
+        "tinypesa",
+        "kenya",
+        "mobile-payments",
+        "php-mpesa",
+        "mpesa-php",
+        "mpesa-stk",
+        "payment-gateway",
+        "php"
+    ],
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "homepage": "https://github.com/your-username/mpesa-stk-push-php",
+    "support": {
+        "issues": "https://github.com/your-username/mpesa-stk-push-php/issues",
+        "source": "https://github.com/your-username/mpesa-stk-push-php"
+    },
+    "readme": "README.md"
+}
