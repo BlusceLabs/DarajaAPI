@@ -354,6 +354,16 @@ $pCfg = [
 
 $c = $pCfg[$prov] ?? $pCfg['tinypesa'];
 
+$pCfgJson = json_encode($pCfg, JSON_HEX_TAG | JSON_UNESCAPED_SLASHES);
+$shortNames = [
+    'tinypesa'=>'TinyPesa','daraja'=>'Daraja','pesapal'=>'PesaPal',
+    'flutterwave'=>'Flutterwave','paystack'=>'Paystack','mtnmomo'=>'MTN MoMo',
+    'airtelmoney'=>'Airtel Money','dpopay'=>'DPO Pay','ozow'=>'Ozow',
+    'cinetpay'=>'CinetPay','paymob'=>'Paymob','ecocash'=>'Ecocash',
+    'orangemoney'=>'Orange Money','evcplus'=>'EVC Plus','wave'=>'Wave',
+    'telebirr'=>'Telebirr','moovafrica'=>'Moov Africa','cellulant'=>'Cellulant',
+];
+
 $gradStyle    = "background: linear-gradient(135deg, {$c['grad_from']} 0%, {$c['grad_to']} 100%);";
 $headerColor  = $c['text_dark'] ? '#111' : '#fff';
 $headerColor2 = $c['text_dark'] ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.78)';
@@ -686,6 +696,16 @@ $jsAmountMax      = $amountMax;
             font-size: 17px; transition: all 0.2s;
         }
         .theme-btn:hover { transform: scale(1.1); }
+
+        .provider-picker { padding: 14px 24px 0; }
+        .picker-label { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 10px; }
+        .picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--border-light); margin-bottom: 4px; }
+        .picker-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 7px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface-alt); cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s; }
+        .picker-item:hover { border-color: var(--accent); background: var(--surface); }
+        .picker-item.active { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 2px rgba(0,0,0,0.06); }
+        .picker-logo { width: 28px; height: 22px; object-fit: contain; }
+        .picker-name { font-size: 9.5px; color: var(--text-2); text-align: center; line-height: 1.2; font-weight: 500; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .picker-item.active .picker-name { font-weight: 700; color: var(--text); }
     </style>
 </head>
 <body>
@@ -702,6 +722,19 @@ $jsAmountMax      = $amountMax;
     </div>
 
     <div class="card-body">
+        <div class="provider-picker">
+            <p class="picker-label">Select payment method</p>
+            <div class="picker-grid" id="pickerGrid">
+                <?php foreach ($pCfg as $key => $cfg): ?>
+                <button type="button" class="picker-item<?= $key === $prov ? ' active' : '' ?>"
+                        onclick="switchProvider(this,'<?= htmlspecialchars($key, ENT_QUOTES) ?>')"
+                        title="<?= htmlspecialchars($cfg['name']) ?>">
+                    <img class="picker-logo" src="<?= htmlspecialchars($cfg['logo']) ?>" alt="" onerror="this.style.opacity='0'">
+                    <span class="picker-name"><?= htmlspecialchars($shortNames[$key] ?? ucfirst($key)) ?></span>
+                </button>
+                <?php endforeach; ?>
+            </div>
+        </div>
         <form id="paymentForm" novalidate>
 
             <div class="form-group">
@@ -740,6 +773,7 @@ $jsAmountMax      = $amountMax;
                 <p class="hint"><?= htmlspecialchars($c['ref_hint']) ?></p>
             </div>
 
+            <input type="hidden" id="selectedProvider" value="<?= htmlspecialchars($prov) ?>">
             <button type="submit" class="btn" id="submitBtn">Pay Now</button>
         </form>
 
@@ -766,7 +800,7 @@ $jsAmountMax      = $amountMax;
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <?= htmlspecialchars($c['secure_badge']) ?>
+            <span id="secureBadgeText"><?= htmlspecialchars($c['secure_badge']) ?></span>
         </div>
     </div>
 </div>
@@ -775,13 +809,82 @@ $jsAmountMax      = $amountMax;
 
 <script>
     // ---- Config from PHP ----
-    const PHONE_STRICT   = <?= $jsPhoneStrict ?>;
-    const PHONE_OPTIONAL = <?= $jsPhoneOptional ?>;
-    const FLOW           = '<?= $jsFlow ?>';
-    const PUSH_MSG       = '<?= $jsPushMsg ?>';
-    const CURRENCY_SYM   = '<?= $jsCurrency ?>';
-    const AMOUNT_MIN     = <?= $jsAmountMin ?>;
-    const AMOUNT_MAX     = <?= $jsAmountMax ?>;
+    let PHONE_STRICT   = <?= $jsPhoneStrict ?>;
+    let PHONE_OPTIONAL = <?= $jsPhoneOptional ?>;
+    let FLOW           = '<?= $jsFlow ?>';
+    let PUSH_MSG       = '<?= $jsPushMsg ?>';
+    let CURRENCY_SYM   = '<?= $jsCurrency ?>';
+    let AMOUNT_MIN     = <?= $jsAmountMin ?>;
+    let AMOUNT_MAX     = <?= $jsAmountMax ?>;
+
+    const PCFG = <?= $pCfgJson ?>;
+
+    function switchProvider(btn, key) {
+        const cfg = PCFG[key];
+        if (!cfg) return;
+        document.querySelectorAll('.picker-item').forEach(function(el){el.classList.remove('active');});
+        btn.classList.add('active');
+        document.getElementById('selectedProvider').value = key;
+        document.querySelector('.card-header').style.background =
+            'linear-gradient(135deg,' + cfg.grad_from + ' 0%,' + cfg.grad_to + ' 100%)';
+        document.documentElement.style.setProperty('--accent', cfg.grad_to);
+        document.documentElement.style.setProperty('--accent-dark', cfg.grad_from);
+        const logoImg = document.querySelector('.provider-logo-img img');
+        if (logoImg) { logoImg.src = cfg.logo; logoImg.alt = cfg.name; }
+        document.querySelector('.card-header h1').textContent = cfg.name;
+        document.querySelector('.card-header p').innerHTML = cfg.subtitle;
+        const phoneLbl = document.querySelector('label[for="phone"]');
+        phoneLbl.innerHTML = escHtml(cfg.phone_label) + (cfg.phone_optional
+            ? ' <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--text-4)">(optional)</span>' : '');
+        phoneInput.placeholder = cfg.phone_ph;
+        phoneInput.required = !cfg.phone_optional;
+        document.getElementById('phoneError').innerHTML = '\u26a0 ' + escHtml(cfg.phone_err);
+        document.getElementById('phoneHint').innerHTML = cfg.phone_hint;
+        document.querySelector('label[for="amount"]').textContent = cfg.currency + ' Amount';
+        const amtPrefix = amountInput.closest('.input-wrap').querySelector('.input-prefix');
+        if (amtPrefix) amtPrefix.textContent = cfg.symbol;
+        amountInput.min = cfg.amount_min;
+        amountInput.max = cfg.amount_max;
+        document.getElementById('amountError').innerHTML = '\u26a0 Enter an amount between '
+            + cfg.symbol + '\u00a0' + Number(cfg.amount_min).toLocaleString()
+            + ' and ' + cfg.symbol + '\u00a0' + Number(cfg.amount_max).toLocaleString() + '.';
+        document.getElementById('amountHint').innerHTML = 'Min: ' + cfg.symbol + '\u00a0'
+            + Number(cfg.amount_min).toLocaleString() + ' \u2022 Max: ' + cfg.symbol + '\u00a0'
+            + Number(cfg.amount_max).toLocaleString();
+        const quickAmts = document.querySelector('.quick-amounts');
+        quickAmts.innerHTML = '';
+        cfg.chips.forEach(function(v) {
+            const lbl = v >= 1000 ? (v % 1000 === 0 ? (v/1000)+'K' : (v/1000).toFixed(1)+'K') : v.toLocaleString();
+            const chip = document.createElement('span');
+            chip.className = 'chip'; chip.dataset.val = v; chip.textContent = lbl;
+            chip.addEventListener('click', function() {
+                amountInput.value = v;
+                document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('selected');});
+                chip.classList.add('selected');
+                amountInput.dispatchEvent(new Event('input'));
+            });
+            quickAmts.appendChild(chip);
+        });
+        const refHint = document.querySelector('#refField .hint');
+        if (refHint) refHint.textContent = cfg.ref_hint;
+        const badgeText = document.getElementById('secureBadgeText');
+        if (badgeText) badgeText.textContent = cfg.secure_badge;
+        PHONE_STRICT   = cfg.phone_strict;
+        PHONE_OPTIONAL = cfg.phone_optional;
+        FLOW           = cfg.flow;
+        PUSH_MSG       = cfg.push_msg;
+        CURRENCY_SYM   = cfg.symbol;
+        AMOUNT_MIN     = cfg.amount_min;
+        AMOUNT_MAX     = cfg.amount_max;
+        [phoneInput, amountInput].forEach(function(inp){
+            inp.value = ''; inp.classList.remove('valid','invalid');
+        });
+        [phoneError, phoneOk, amountError, amountOk].forEach(function(el){el.classList.remove('show');});
+        phoneHint.style.display = '';
+        amountHint.style.display = '';
+        messageDiv.className = 'message';
+        resetProgress();
+    }
 
     // ---- Theme ----
     function toggleTheme() {
@@ -1007,7 +1110,7 @@ $jsAmountMax      = $amountMax;
             const res  = await fetch('stk_push.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone, amount, reference })
+                body: JSON.stringify({ phone, amount, reference, provider: document.getElementById('selectedProvider').value })
             });
             const data = await res.json();
 

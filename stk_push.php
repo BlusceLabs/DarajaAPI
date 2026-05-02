@@ -66,9 +66,15 @@ if (!is_numeric($amount) || (float)$amount < 1 || (float)$amount > 150000) {
 
 // ------------------------------------------------------------------
 // LOAD ACTIVE PROVIDER (needed to know flow before phone validation)
+// Client may pass provider from the picker UI; validate against whitelist.
 // ------------------------------------------------------------------
-$provider     = defined('PAYMENT_PROVIDER') ? PAYMENT_PROVIDER : 'tinypesa';
-$providerFile = __DIR__ . '/providers/' . preg_replace('/[^a-z]/', '', $provider) . '.php';
+$knownProviders = ['tinypesa','daraja','pesapal','flutterwave','paystack','mtnmomo',
+                   'airtelmoney','dpopay','ozow','cinetpay','paymob','ecocash',
+                   'orangemoney','evcplus','wave','telebirr','moovafrica','cellulant'];
+$provider = (isset($data['provider']) && in_array($data['provider'], $knownProviders, true))
+    ? $data['provider']
+    : (defined('PAYMENT_PROVIDER') ? PAYMENT_PROVIDER : 'tinypesa');
+$providerFile = __DIR__ . '/providers/' . $provider . '.php';
 
 if (!file_exists($providerFile)) {
     echo json_encode(['success' => false, 'message' => 'Unsupported payment provider: ' . htmlspecialchars($provider)]);
