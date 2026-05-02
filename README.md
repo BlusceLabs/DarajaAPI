@@ -1,25 +1,52 @@
 # M-Pesa STK Push — PHP Integration
 
-A clean, ready-to-use PHP integration for **Lipa Na M-Pesa Online** (STK Push) using the [TinyPesa](https://tinypesa.com) API. No complex OAuth flows — just a simple API key and you're ready to accept M-Pesa payments.
+A clean, production-ready PHP integration for **Lipa Na M-Pesa Online** (STK Push) using the [TinyPesa](https://tinypesa.com) API. No complex OAuth flows — just an API key and you're ready to accept M-Pesa payments.
+
+No frameworks. No build tools. Plain PHP + vanilla JS.
 
 ---
 
 ## Features
 
-- STK Push — prompts the customer's phone for their M-Pesa PIN
-- Quick-amount buttons and optional account reference on the payment form
-- Callback handler that parses and logs all payment results as structured JSON
-- Payment status polling — auto-detects confirmation in the browser
-- Transaction log admin page with summary stats and status filtering
-- Phone number validation (rejects non-Safaricom numbers before calling the API)
-- No framework dependencies — plain PHP + vanilla JS
+**Payment flow**
+- STK Push — sends a PIN prompt directly to the customer's phone
+- Real-time inline phone and amount validation before submission
+- Quick-amount chips (50, 100, 500, 1,000, 2,500, 5,000) on the payment form
+- Optional account reference field (shown/hidden on demand)
+- Payment status polling — auto-detects confirmation and shows a receipt in the browser
+- Rate limiting — max 5 STK Push requests per IP per minute (file-based, no Redis required)
+
+**Admin panel**
+- Summary stats: total requests, confirmed, failed, total KES collected
+- 7-day confirmed payments bar chart (pure SVG, computed in PHP — no JS charting library)
+- Date range filter — filter the transaction table by from/to date
+- Status tabs — All / Confirmed / Failed / Pending
+- Full-text search by phone number or M-Pesa receipt
+- Click any row to open a slide-out detail drawer with the full transaction record
+- Pagination — 20 rows per page, works in combination with all filters
+- CSV export — downloads all transactions; respects the active date range filter
+
+**Developer tools**
+- `/health.php` — checks PHP version, cURL, JSON extension, config, API key, log writability, temp dir, and HTTPS
+- `/webhook_test.php` — sends simulated M-Pesa callbacks to `callback.php` with four preset scenarios (success, user cancelled, insufficient funds, wrong PIN) and shows a live request/response log
+
+**Production hardening**
+- `.htaccess` — blocks direct browser access to `config.php`, `mpesa_log.json`, and all `.json` files; disables directory listings; adds security headers; routes 404s to the custom error page
+- Custom `404.php` error page
+- `config.php` and `mpesa_log.json` are gitignored by default
+
+**UI/UX**
+- Dark mode — toggleable via 🌙/☀️ button on every page; persists across pages via `localStorage`; respects the OS `prefers-color-scheme` on first visit
+- Fully responsive layout on all pages
+- SVG favicon
 
 ---
 
 ## Requirements
 
-- PHP 7.4 or higher with the `curl` extension enabled
+- PHP 7.4+ with the `curl` and `json` extensions enabled
 - A [TinyPesa](https://tinypesa.com) account and API key
+- A publicly accessible HTTPS URL for the M-Pesa callback (use [ngrok](https://ngrok.com) for local development)
 
 ---
 
@@ -55,7 +82,8 @@ In your TinyPesa dashboard, set the callback URL to:
 https://yourdomain.com/callback.php
 ```
 
-> Safaricom requires a publicly accessible HTTPS URL. The callback cannot point to localhost.
+> Safaricom requires a publicly accessible HTTPS URL. The callback cannot point to `localhost`.  
+> For local development, expose your server with [ngrok](https://ngrok.com): `ngrok http 8000`
 
 ### 4. Run the server
 
@@ -65,6 +93,10 @@ php -S 0.0.0.0:8000
 
 Open `http://localhost:8000` in your browser.
 
+### 5. Verify your setup
+
+Visit `/health.php` to check that all requirements are met before accepting payments.
+
 ---
 
 ## File Structure
@@ -72,18 +104,18 @@ Open `http://localhost:8000` in your browser.
 ```
 ├── index.php            # Payment UI — phone, amount chips, reference, inline validation
 ├── stk_push.php         # POST endpoint — validates, rate-limits, calls TinyPesa API
-├── callback.php         # Receives M-Pesa callbacks, appends to log
-├── check_status.php     # GET polling endpoint — confirms payment by phone
-├── admin.php            # Transaction log — stats, filter, search, date range, CSV export
-├── export.php           # Streams mpesa_log.json as downloadable CSV
-├── health.php           # System health check — PHP, extensions, config, permissions
-├── webhook_test.php     # Dev tool — simulate M-Pesa callbacks without real transactions
+├── callback.php         # Receives M-Pesa callbacks, appends one JSON line per event
+├── check_status.php     # GET polling endpoint — confirms payment by phone number
+├── admin.php            # Admin panel — chart, stats, filter, search, drawer, pagination, CSV export
+├── export.php           # Streams mpesa_log.json as a downloadable CSV (supports date range)
+├── health.php           # System health check — environment, config, permissions, HTTPS
+├── webhook_test.php     # Dev tool — simulate M-Pesa callbacks with preset scenarios
 ├── 404.php              # Custom 404 error page
 ├── .htaccess            # Apache: protect sensitive files, security headers, 404 routing
-├── config.php           # Your credentials (gitignored — never commit)
-├── config.example.php   # Safe template — copy to config.php
+├── config.php           # Your credentials — gitignored, never commit this file
+├── config.example.php   # Safe credential template — copy to config.php
 ├── favicon.svg          # SVG browser tab icon
-├── mpesa_log.json        # Auto-created — one JSON line per callback (gitignored)
+├── mpesa_log.json       # Auto-created — one JSON line per callback (gitignored)
 ├── README.md
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
@@ -98,6 +130,8 @@ Open `http://localhost:8000` in your browser.
 
 Triggers an STK push to the customer's phone.
 
+**Rate limit:** 5 requests per IP per minute. Returns `429 Too Many Requests` with a `Retry-After` header if exceeded.
+
 **Request body (JSON):**
 ```json
 {
@@ -106,26 +140,57 @@ Triggers an STK push to the customer's phone.
   "reference": "Invoice-001"
 }
 ```
-`reference` is optional (max 12 characters). Defaults to an auto-generated order ID.
 
-**Success:**
+`reference` is optional (max 12 characters). Defaults to an auto-generated order ID if omitted.
+
+**Accepted phone formats:** `0712345678` · `+254712345678` · `254712345678` · `0112345678`
+
+**Success response:**
 ```json
 { "success": true, "message": "STK Push sent! Check your phone.", "reference": "Invoice-001" }
 ```
 
-**Error:**
+**Error response:**
 ```json
 { "success": false, "message": "Invalid Safaricom phone number." }
+```
+
+**Rate limit response (HTTP 429):**
+```json
+{ "success": false, "message": "Too many requests. Please wait before trying again." }
 ```
 
 ---
 
 ### `POST /callback.php`
 
-Receives the payment result from TinyPesa after the customer enters their PIN.
-All callbacks are appended to `mpesa_log.json` as JSON lines.
+Receives the payment result from TinyPesa after the customer enters their M-Pesa PIN. Each callback is appended to `mpesa_log.json` as a single JSON line.
 
-**Responds with:**
+**Expected payload (from TinyPesa/Safaricom):**
+```json
+{
+  "Body": {
+    "stkCallback": {
+      "MerchantRequestID": "...",
+      "CheckoutRequestID": "...",
+      "ResultCode": 0,
+      "ResultDesc": "The service request is processed successfully.",
+      "CallbackMetadata": {
+        "Item": [
+          { "Name": "Amount",             "Value": 500 },
+          { "Name": "MpesaReceiptNumber", "Value": "QHX2Y3Z4AB" },
+          { "Name": "TransactionDate",    "Value": 20241210103045 },
+          { "Name": "PhoneNumber",        "Value": 254712345678 }
+        ]
+      }
+    }
+  }
+}
+```
+
+`ResultCode: 0` means success. Any other value (e.g. `1032` — user cancelled, `1` — insufficient funds) is logged as a failed transaction.
+
+**Response:**
 ```json
 { "ResultCode": 0, "ResultDesc": "Accepted" }
 ```
@@ -134,7 +199,7 @@ All callbacks are appended to `mpesa_log.json` as JSON lines.
 
 ### `GET /check_status.php?phone=0712345678`
 
-Polls `mpesa_log.json` for a confirmed payment matching the given phone number.
+Polls `mpesa_log.json` for the most recent confirmed payment matching the given phone number.
 
 **Confirmed:**
 ```json
@@ -156,16 +221,74 @@ Polls `mpesa_log.json` for a confirmed payment matching the given phone number.
 
 ### `GET /admin.php`
 
-Browser-based transaction log viewer. Shows:
-- Summary cards: total requests, confirmed, failed, total KES collected
-- A filterable table of all transactions with phone, amount, receipt, status, and result description
+Browser-based transaction log viewer. Features:
+- Summary stat cards (total, confirmed, failed, KES collected)
+- 7-day confirmed payments bar chart
+- Date range filter (from/to)
+- Status filter tabs and phone/receipt search
+- Click any row to open a full transaction detail drawer
+- Pagination (20 rows per page)
+- CSV export button (respects active date filter)
+
+---
+
+### `GET /export.php`
+
+Downloads all transactions as a UTF-8 CSV file (Excel-compatible with BOM).
+
+**Optional query parameters:**
+
+| Parameter | Format       | Description                          |
+|-----------|--------------|--------------------------------------|
+| `from`    | `YYYY-MM-DD` | Only include transactions on or after |
+| `to`      | `YYYY-MM-DD` | Only include transactions on or before |
+
+**Examples:**
+```
+/export.php                              # All transactions
+/export.php?from=2024-12-01              # From 1 Dec 2024 onwards
+/export.php?from=2024-12-01&to=2024-12-31  # December 2024 only
+```
+
+**CSV columns:** `#`, `Date / Time`, `Phone`, `Amount (KES)`, `Receipt`, `Status`, `Result Code`, `Result Description`, `Reference`
+
+---
+
+### `GET /health.php`
+
+Displays a system health dashboard with pass/warn/fail status for:
+
+| Check | Description |
+|-------|-------------|
+| PHP Version | Must be 7.4 or higher |
+| cURL Extension | Required for TinyPesa API calls |
+| JSON Extension | Required for callback parsing |
+| config.php | File must exist |
+| TinyPesa API Key | Must not be the placeholder value |
+| Transaction Log | Directory must be writable |
+| Temp Directory | Required for file-based rate limiting |
+| HTTPS | Warns if not running over a secure connection |
+
+---
+
+### `GET /webhook_test.php`
+
+Developer-only tool to simulate M-Pesa callbacks without making a real payment. Sends a correctly structured `stkCallback` JSON payload to `callback.php` and shows the full request and response.
+
+**Preset scenarios:**
+- ✅ Successful Payment (`ResultCode: 0`)
+- ❌ User Cancelled (`ResultCode: 1032`)
+- 💸 Insufficient Funds (`ResultCode: 1`)
+- 🔒 Wrong PIN (`ResultCode: 2001`)
+
+> Remove or password-protect this page before going to production.
 
 ---
 
 ## Phone Number Formats Accepted
 
-| Input | Normalised |
-|-------|-----------|
+| Input | Normalised to |
+|-------|--------------|
 | `0712345678` | `254712345678` |
 | `+254712345678` | `254712345678` |
 | `254712345678` | `254712345678` |
@@ -175,16 +298,46 @@ Browser-based transaction log viewer. Shows:
 
 ## Security Notes
 
-- `config.php` is in `.gitignore` — never commit it
-- `mpesa_log.json` is also excluded — it contains real phone numbers and amounts
-- In production, restrict browser access to `stk_push.php`, `callback.php`, and `check_status.php` via your web server (nginx/Apache) so only authorised clients can call them
-- `admin.php` has no authentication by default — add HTTP basic auth or a session check before deploying publicly
+- **`config.php` is gitignored** — never commit it. Use `config.example.php` as the template.
+- **`mpesa_log.json` is gitignored** — it contains real phone numbers and transaction amounts.
+- **`.htaccess`** blocks direct browser access to `config.php`, `mpesa_log.json`, and all `.json` files. Enable this by enabling `mod_rewrite` and `AllowOverride All` on Apache.
+- **`admin.php` has no authentication by default.** Add HTTP basic auth or a session check before deploying to a public server.
+- **`webhook_test.php`** is a development tool — remove it or restrict access in production.
+- **Rate limiting** is file-based (uses `sys_get_temp_dir()`). For high-traffic deployments, consider replacing it with Redis or a database-backed approach.
+- The callback URL must be an HTTPS endpoint reachable by Safaricom's servers.
+
+---
+
+## Local Development with ngrok
+
+To test real M-Pesa callbacks on your local machine:
+
+```bash
+# Start your PHP server
+php -S 0.0.0.0:8000
+
+# In a second terminal, expose it publicly
+ngrok http 8000
+```
+
+Copy the `https://` URL from ngrok and set it as your callback in the TinyPesa dashboard:
+```
+https://xxxx-xx-xx-xxx-xx.ngrok-free.app/callback.php
+```
+
+Use `/webhook_test.php` to simulate callbacks without ngrok during UI development.
 
 ---
 
 ## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 
