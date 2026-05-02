@@ -5,24 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lipa Na M-Pesa</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script>(function(){var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);})();</script>
     <style>
+        :root {
+            --bg: #f0f4f0;
+            --surface: #fff;
+            --surface-alt: #fafafa;
+            --border: #e0e6e0;
+            --border-light: #f0f0f0;
+            --text: #222;
+            --text-2: #555;
+            --text-3: #888;
+            --text-4: #aaa;
+            --text-5: #bbb;
+            --text-6: #ccc;
+            --shadow: rgba(0,0,0,0.10);
+            --chip-bg: #f2fbf5;
+            --chip-border: #d8e8d8;
+            --receipt-bg: rgba(0,0,0,0.03);
+            --toggle-track: #ddd;
+            --progress-bg: #e8e8e8;
+            --msg-success-bg: #e8f8ef; --msg-success-text: #1a6b3a; --msg-success-border: #b3e6c8;
+            --msg-error-bg: #fdf2f2;   --msg-error-text: #8b2020;   --msg-error-border: #f5c0c0;
+            --msg-wait-bg: #fff8e6;    --msg-wait-text: #7a5a00;    --msg-wait-border: #f0d98a;
+            --receipt-label: rgba(26,107,58,0.7);
+            --receipt-value: #1a6b3a;
+        }
+        :root[data-theme="dark"] {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface-alt: #0d1117;
+            --border: #30363d;
+            --border-light: #21262d;
+            --text: #e6edf3;
+            --text-2: #adbac7;
+            --text-3: #768390;
+            --text-4: #636e7b;
+            --text-5: #545d68;
+            --text-6: #444c56;
+            --shadow: rgba(0,0,0,0.50);
+            --chip-bg: #1c2128;
+            --chip-border: #30363d;
+            --receipt-bg: rgba(255,255,255,0.05);
+            --toggle-track: #444c56;
+            --progress-bg: #21262d;
+            --msg-success-bg: #0f2a1a; --msg-success-text: #56d364; --msg-success-border: #1a4731;
+            --msg-error-bg: #2d1111;   --msg-error-text: #f97171;   --msg-error-border: #5c2020;
+            --msg-wait-bg: #2a2000;    --msg-wait-text: #e3b341;    --msg-wait-border: #5a4000;
+            --receipt-label: rgba(86,211,100,0.65);
+            --receipt-value: #56d364;
+        }
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f4f0;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            transition: background 0.2s, color 0.2s;
         }
 
         .card {
-            background: #fff;
+            background: var(--surface);
             border-radius: 20px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+            box-shadow: 0 8px 40px var(--shadow);
             max-width: 420px;
             width: 100%;
             overflow: hidden;
@@ -43,16 +95,11 @@
         }
 
         .mpesa-icon {
-            width: 38px;
-            height: 38px;
+            width: 38px; height: 38px;
             background: rgba(255,255,255,0.2);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 800;
-            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 800; color: #fff;
         }
 
         .card-header h1 { color: #fff; font-size: 22px; font-weight: 700; }
@@ -66,7 +113,7 @@
             display: block;
             font-size: 12px;
             font-weight: 700;
-            color: #555;
+            color: var(--text-2);
             margin-bottom: 7px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -76,10 +123,9 @@
 
         .input-prefix {
             position: absolute;
-            left: 13px;
-            top: 50%;
+            left: 13px; top: 50%;
             transform: translateY(-50%);
-            color: #999;
+            color: var(--text-4);
             font-size: 13px;
             pointer-events: none;
             user-select: none;
@@ -90,111 +136,78 @@
         input[type="text"] {
             width: 100%;
             padding: 12px 13px 12px 40px;
-            border: 1.5px solid #e0e6e0;
+            border: 1.5px solid var(--border);
             border-radius: 10px;
             font-size: 15px;
-            color: #222;
-            background: #fafafa;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            color: var(--text);
+            background: var(--surface-alt);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
 
         input:focus {
             outline: none;
             border-color: #00a651;
             box-shadow: 0 0 0 3px rgba(0,166,81,0.12);
-            background: #fff;
+            background: var(--surface);
         }
 
-        .hint { font-size: 11.5px; color: #aaa; margin-top: 5px; }
+        .hint { font-size: 11.5px; color: var(--text-4); margin-top: 5px; }
 
         .field-error {
-            font-size: 11.5px;
-            color: #c0392b;
-            margin-top: 5px;
-            display: none;
-            align-items: center;
-            gap: 4px;
+            font-size: 11.5px; color: #c0392b; margin-top: 5px;
+            display: none; align-items: center; gap: 4px;
         }
+        :root[data-theme="dark"] .field-error { color: #f97171; }
         .field-error.show { display: flex; }
 
         .field-ok {
-            font-size: 11.5px;
-            color: #1a8a4a;
-            margin-top: 5px;
-            display: none;
-            align-items: center;
-            gap: 4px;
+            font-size: 11.5px; color: #1a8a4a; margin-top: 5px;
+            display: none; align-items: center; gap: 4px;
         }
+        :root[data-theme="dark"] .field-ok { color: #56d364; }
         .field-ok.show { display: flex; }
 
-        input.invalid {
-            border-color: #e74c3c !important;
-            box-shadow: 0 0 0 3px rgba(231,76,60,0.10) !important;
-        }
-        input.valid {
-            border-color: #00a651 !important;
-            box-shadow: 0 0 0 3px rgba(0,166,81,0.10) !important;
-        }
+        input.invalid { border-color: #e74c3c !important; box-shadow: 0 0 0 3px rgba(231,76,60,0.10) !important; }
+        input.valid   { border-color: #00a651 !important; box-shadow: 0 0 0 3px rgba(0,166,81,0.10) !important; }
 
-        /* Quick-amount chips */
         .quick-amounts {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 7px;
-            margin-top: 9px;
+            display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px;
         }
 
         .chip {
             padding: 5px 13px;
-            border: 1.5px solid #d8e8d8;
+            border: 1.5px solid var(--chip-border);
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 12px; font-weight: 600;
             color: #006633;
-            background: #f2fbf5;
+            background: var(--chip-bg);
             cursor: pointer;
             transition: all 0.15s;
         }
+        :root[data-theme="dark"] .chip { color: #3fb950; }
 
         .chip:hover, .chip.selected {
-            background: #006633;
-            color: #fff;
-            border-color: #006633;
+            background: #006633; color: #fff; border-color: #006633;
         }
 
-        /* Optional reference toggle */
         .ref-toggle {
-            font-size: 12px;
-            color: #00a651;
-            cursor: pointer;
+            font-size: 12px; color: #00a651; cursor: pointer;
             text-decoration: underline;
-            margin-top: -8px;
-            margin-bottom: 16px;
-            display: inline-block;
+            margin-top: -8px; margin-bottom: 16px; display: inline-block;
         }
 
         .ref-field { display: none; margin-bottom: 18px; }
         .ref-field.show { display: block; }
 
-        /* Button */
         .btn {
-            width: 100%;
-            padding: 14px;
+            width: 100%; padding: 14px;
             background: linear-gradient(135deg, #006633, #00a651);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
             letter-spacing: 0.4px;
             transition: opacity 0.2s, transform 0.1s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-
         .btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
         .btn:active:not(:disabled) { transform: translateY(0); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -207,75 +220,63 @@
             animation: spin 0.7s linear infinite;
             flex-shrink: 0;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Messages */
         .message {
-            margin-top: 16px;
-            padding: 13px 15px;
-            border-radius: 10px;
-            font-size: 13.5px;
-            display: none;
-            gap: 10px;
-            align-items: flex-start;
-            line-height: 1.5;
+            margin-top: 16px; padding: 13px 15px; border-radius: 10px;
+            font-size: 13.5px; display: none;
+            gap: 10px; align-items: flex-start; line-height: 1.5;
         }
-        .message.show { display: flex; }
-        .message.success { background: #e8f8ef; color: #1a6b3a; border: 1px solid #b3e6c8; }
-        .message.error   { background: #fdf2f2; color: #8b2020; border: 1px solid #f5c0c0; }
-        .message.waiting { background: #fff8e6; color: #7a5a00; border: 1px solid #f0d98a; }
+        .message.show   { display: flex; }
+        .message.success { background: var(--msg-success-bg); color: var(--msg-success-text); border: 1px solid var(--msg-success-border); }
+        .message.error   { background: var(--msg-error-bg);   color: var(--msg-error-text);   border: 1px solid var(--msg-error-border); }
+        .message.waiting { background: var(--msg-wait-bg);    color: var(--msg-wait-text);    border: 1px solid var(--msg-wait-border); }
         .message .icon   { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
         .message .text strong { display: block; margin-bottom: 2px; font-size: 14px; }
 
-        /* Receipt details */
         .receipt-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px 14px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px;
             margin-top: 10px;
-            background: rgba(0,0,0,0.03);
-            border-radius: 8px;
-            padding: 10px 12px;
+            background: var(--receipt-bg);
+            border-radius: 8px; padding: 10px 12px;
         }
-        .receipt-grid dt { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: #1a6b3a; opacity: 0.7; }
-        .receipt-grid dd { font-size: 12.5px; font-weight: 600; color: #1a6b3a; font-family: monospace; }
+        .receipt-grid dt { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--receipt-label); }
+        .receipt-grid dd { font-size: 12.5px; font-weight: 600; color: var(--receipt-value); font-family: monospace; }
 
-        /* Progress bar */
         .progress-wrap { margin-top: 14px; display: none; }
         .progress-wrap.show { display: block; }
-        .progress-bar { height: 3px; background: #e8e8e8; border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+        .progress-bar { height: 3px; background: var(--progress-bg); border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #006633, #00a651); border-radius: 2px; animation: prog 60s linear forwards; }
         @keyframes prog { from { width: 0 } to { width: 100% } }
-        .progress-label { font-size: 11.5px; color: #aaa; text-align: center; }
+        .progress-label { font-size: 11.5px; color: var(--text-4); text-align: center; }
 
-        /* Footer */
         .card-footer {
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid var(--border-light);
             padding: 14px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
         }
         .footer-link {
-            font-size: 12px;
-            color: #aaa;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            font-size: 12px; color: var(--text-4); text-decoration: none;
+            display: flex; align-items: center; gap: 5px;
         }
         .footer-link:hover { color: #006633; }
         .secure-badge {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11.5px;
-            color: #bbb;
+            display: flex; align-items: center; gap: 5px;
+            font-size: 11.5px; color: var(--text-5);
         }
         .secure-badge svg { width: 12px; height: 12px; }
+
+        /* Theme toggle */
+        .theme-btn {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 1.5px solid var(--border);
+            background: var(--surface); color: var(--text-2);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 12px var(--shadow); z-index: 999;
+            font-size: 17px; transition: all 0.2s;
+        }
+        .theme-btn:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -325,7 +326,7 @@
             <span class="ref-toggle" id="refToggle">+ Add account reference</span>
 
             <div class="ref-field" id="refField">
-                <label for="reference">Account Reference <span style="font-weight:400;text-transform:none;color:#aaa">(optional)</span></label>
+                <label for="reference">Account Reference <span style="font-weight:400;text-transform:none;color:var(--text-4)">(optional)</span></label>
                 <div class="input-wrap">
                     <span class="input-prefix">#</span>
                     <input type="text" id="reference" placeholder="e.g. Invoice-001 or Order ID" maxlength="12">
@@ -363,7 +364,23 @@
     </div>
 </div>
 
+<button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle dark mode"></button>
+
 <script>
+    // ---- Theme ----
+    function toggleTheme() {
+        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('theme', t);
+        updateThemeIcon();
+    }
+    function updateThemeIcon() {
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.getElementById('themeBtn').textContent = dark ? '☀️' : '🌙';
+    }
+    updateThemeIcon();
+
+    // ---- Form ----
     const form        = document.getElementById('paymentForm');
     const phoneInput  = document.getElementById('phone');
     const amountInput = document.getElementById('amount');
@@ -378,9 +395,6 @@
 
     let pollInterval = null;
 
-    // ------------------------------------------------------------------
-    // REAL-TIME INLINE VALIDATION
-    // ------------------------------------------------------------------
     function setFieldState(input, errorEl, okEl, hintEl, isValid, hasContent) {
         input.classList.toggle('invalid', hasContent && !isValid);
         input.classList.toggle('valid',   hasContent && isValid);
@@ -410,29 +424,24 @@
         const v = phoneInput.value.trim();
         setFieldState(phoneInput, phoneError, phoneOk, phoneHint, validatePhone(v), v.length > 0);
     });
-
     phoneInput.addEventListener('blur', () => {
         const v = phoneInput.value.trim();
         if (v) setFieldState(phoneInput, phoneError, phoneOk, phoneHint, validatePhone(v), true);
     });
-
     amountInput.addEventListener('input', () => {
         const v = amountInput.value.trim();
         setFieldState(amountInput, amountError, amountOk, amountHint, validateAmount(v), v.length > 0);
     });
-
     amountInput.addEventListener('blur', () => {
         const v = amountInput.value.trim();
         if (v) setFieldState(amountInput, amountError, amountOk, amountHint, validateAmount(v), true);
     });
 
-    // Reference field toggle
     refToggle.addEventListener('click', () => {
         const open = refField.classList.toggle('show');
         refToggle.textContent = open ? '- Remove account reference' : '+ Add account reference';
     });
 
-    // Quick-amount chips
     document.querySelectorAll('.chip').forEach(chip => {
         chip.addEventListener('click', () => {
             amountInput.value = chip.dataset.val;
