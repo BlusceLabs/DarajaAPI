@@ -1,5 +1,5 @@
 {
-    "name": "your-username/mpesa-stk-push-php",
+    "name": "blusce-labs/daraja-api",
     "description": "Plain PHP STK Push integration for M-Pesa via TinyPesa API — no framework, no Composer required.",
     "keywords": [
         "mpesa",
@@ -24,10 +24,10 @@
         "ext-curl": "*",
         "ext-json": "*"
     },
-    "homepage": "https://github.com/your-username/mpesa-stk-push-php",
+    "homepage": "https://github.com/BlusceLabs/DarajaAPI",
     "support": {
-        "issues": "https://github.com/your-username/mpesa-stk-push-php/issues",
-        "source": "https://github.com/your-username/mpesa-stk-push-php"
+        "issues": "https://github.com/BlusceLabs/DarajaAPI/issues",
+        "source": "https://github.com/BlusceLabs/DarajaAPI"
     },
     "readme": "README.md"
 }

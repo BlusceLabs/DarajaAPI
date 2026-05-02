@@ -55,8 +55,8 @@ No frameworks. No build tools. Plain PHP + vanilla JS.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/mpesa-stk-push-php.git
-cd mpesa-stk-push-php
+git clone https://github.com/BlusceLabs/DarajaAPI.git
+cd DarajaAPI
 ```
 
 ### 2. Configure your credentials
