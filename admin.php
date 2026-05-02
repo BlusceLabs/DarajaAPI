@@ -266,6 +266,7 @@
         .badge.failed   { background: var(--badge-fail-bg); color: var(--badge-fail-text); }
         .badge.pending  { background: var(--badge-pend-bg); color: var(--badge-pend-text); }
         .badge.provider { background: var(--badge-prov-bg); color: var(--badge-prov-text); font-weight: 600; }
+        .badge.provider .prov-logo { height: 14px; width: auto; display: inline-block; vertical-align: middle; border-radius: 2px; }
         .receipt { font-family: monospace; font-size: 12px; color: var(--text-2); }
         .amount  { font-weight: 700; }
         .phone   { color: var(--text-2); }
@@ -555,6 +556,8 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             $provider      = $e['provider'] ?? 'tinypesa';
             $providerNames = ['tinypesa' => 'TinyPesa', 'daraja' => 'Daraja', 'pesapal' => 'PesaPal', 'flutterwave' => 'Flutterwave'];
             $providerLabel = $providerNames[$provider] ?? ucfirst($provider);
+            $providerLogos = ['tinypesa' => '/logos/tinypesa.png', 'daraja' => '/logos/daraja.svg', 'pesapal' => '/logos/pesapal.png', 'flutterwave' => '/logos/flutterwave_32.png'];
+            $providerLogo  = $providerLogos[$provider] ?? null;
             $txJson        = htmlspecialchars(json_encode($e), ENT_QUOTES, 'UTF-8');
             $rowNum        = $total - $i;
         ?>
@@ -575,7 +578,7 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
         >
             <td style="color:var(--text-6);font-size:12px"><?= $rowNum ?></td>
             <td style="white-space:nowrap;color:var(--text-8)"><?= htmlspecialchars($date) ?></td>
-            <td><span class="badge provider"><?= htmlspecialchars($providerLabel) ?></span></td>
+            <td><span class="badge provider" title="<?= htmlspecialchars($providerLabel) ?>"><?php if ($providerLogo): ?><img class="prov-logo" src="<?= htmlspecialchars($providerLogo) ?>" alt="<?= htmlspecialchars($providerLabel) ?>"><?php endif; ?> <?= htmlspecialchars($providerLabel) ?></span></td>
             <td class="phone"><?= htmlspecialchars($phone) ?></td>
             <td class="amount"><?= htmlspecialchars($amount) ?></td>
             <td class="receipt"><?= htmlspecialchars($receipt) ?></td>
@@ -812,9 +815,11 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
 
         const providerNames = {tinypesa:'TinyPesa', daraja:'Daraja', pesapal:'PesaPal', flutterwave:'Flutterwave'};
         const providerLabel = providerNames[tx.provider] || (tx.provider ? tx.provider.charAt(0).toUpperCase() + tx.provider.slice(1) : 'TinyPesa');
+        const providerLogos = {tinypesa:'/logos/tinypesa.png', daraja:'/logos/daraja.svg', pesapal:'/logos/pesapal.png', flutterwave:'/logos/flutterwave_32.png'};
+        const provLogo = providerLogos[tx.provider] ? `<img class="prov-logo" src="${providerLogos[tx.provider]}" alt="" style="height:14px;width:auto;vertical-align:middle;margin-right:3px">` : '';
         const rows = [
             ['Status',      `<span class="${bCls}">${icon} ${label}</span>`, true],
-            ['Provider',    `<span class="badge provider">${esc(providerLabel)}</span>`, true],
+            ['Provider',    `<span class="badge provider">${provLogo}${esc(providerLabel)}</span>`, true],
             ['Phone',       phone],
             ['Amount',      amount],
             ['Receipt',     tx.MpesaReceiptNumber || '—'],
