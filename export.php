@@ -1,5 +1,6 @@
 <?php
-// export.php — Downloads all transactions as a CSV file
+// export.php — Downloads transactions as a UTF-8 CSV file
+// Optional query params: ?from=YYYY-MM-DD&to=YYYY-MM-DD
 
 $logFile = __DIR__ . '/mpesa_log.json';
 
@@ -15,7 +16,29 @@ foreach ($lines as $line) {
     if (is_array($e)) $entries[] = $e;
 }
 
-$filename = 'mpesa_transactions_' . date('Ymd_His') . '.csv';
+// ---------------------------------------------------------------
+// Optional date-range filter
+// ---------------------------------------------------------------
+$from = isset($_GET['from']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['from']) ? $_GET['from'] : null;
+$to   = isset($_GET['to'])   && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['to'])   ? $_GET['to']   : null;
+
+if ($from || $to) {
+    $entries = array_values(array_filter($entries, function ($e) use ($from, $to) {
+        $day = substr($e['timestamp'] ?? '', 0, 10);
+        if ($from && $day < $from) return false;
+        if ($to   && $day > $to)   return false;
+        return true;
+    }));
+}
+
+// ---------------------------------------------------------------
+// Build filename
+// ---------------------------------------------------------------
+$suffix = '';
+if ($from || $to) {
+    $suffix = '_' . ($from ?: 'start') . '_to_' . ($to ?: 'end');
+}
+$filename = 'mpesa_transactions' . $suffix . '_' . date('Ymd_His') . '.csv';
 
 header('Content-Type: text/csv; charset=UTF-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -28,7 +51,7 @@ $out = fopen('php://output', 'w');
 fwrite($out, "\xEF\xBB\xBF");
 
 // Header row
-fputcsv($out, ['#', 'Date / Time', 'Phone', 'Amount (KES)', 'Receipt', 'Status', 'Result Description', 'Reference']);
+fputcsv($out, ['#', 'Date / Time', 'Phone', 'Amount (KES)', 'Receipt', 'Status', 'Result Code', 'Result Description', 'Reference']);
 
 $total = count($entries);
 foreach (array_reverse($entries) as $i => $e) {
@@ -39,9 +62,9 @@ foreach (array_reverse($entries) as $i => $e) {
     $receipt = $e['MpesaReceiptNumber'] ?? '';
     $date    = $e['timestamp'] ?? '';
     $desc    = $e['ResultDesc'] ?? '';
-    $ref     = $e['AccountReference'] ?? '';
+    $ref     = $e['AccountReference'] ?? $e['reference'] ?? '';
 
-    fputcsv($out, [$total - $i, $date, $phone, $amount, $receipt, $status, $desc, $ref]);
+    fputcsv($out, [$total - $i, $date, $phone, $amount, $receipt, $status, $rc ?? '', $desc, $ref]);
 }
 
 fclose($out);

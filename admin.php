@@ -38,6 +38,19 @@
             --stat-red: #c0392b;
             --nav-border: #c8e6d4;
             --nav-hover: #f0faf5;
+            --chart-bar: #006633;
+            --chart-bar-empty: #e8f0e8;
+            --chart-label: #aaa;
+            --chart-gridline: #f0f0f0;
+            --drawer-overlay: rgba(0,0,0,0.35);
+            --drawer-panel: #fff;
+            --detail-label: #aaa;
+            --detail-value: #222;
+            --detail-row-alt: #f9fbf9;
+            --page-btn: #fff;
+            --page-btn-text: #555;
+            --page-btn-border: #e0e0e0;
+            --page-btn-active: #006633;
         }
         :root[data-theme="dark"] {
             --bg: #0d1117;
@@ -70,6 +83,19 @@
             --stat-red: #f97171;
             --nav-border: #1a4731;
             --nav-hover: #0f2a1a;
+            --chart-bar: #3fb950;
+            --chart-bar-empty: #1c2128;
+            --chart-label: #636e7b;
+            --chart-gridline: #21262d;
+            --drawer-overlay: rgba(0,0,0,0.65);
+            --drawer-panel: #161b22;
+            --detail-label: #636e7b;
+            --detail-value: #e6edf3;
+            --detail-row-alt: #1c2128;
+            --page-btn: #161b22;
+            --page-btn-text: #adbac7;
+            --page-btn-border: #30363d;
+            --page-btn-active: #238636;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -123,8 +149,9 @@
         }
         .toggle-switch.on::after { left: 16px; }
 
+        /* Stats */
         .stats {
-            max-width: 960px; margin: 0 auto 22px;
+            max-width: 960px; margin: 0 auto 16px;
             display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;
         }
         .stat-card {
@@ -137,6 +164,24 @@
         .stat-card .value.red { color: var(--stat-red); }
         .stat-card .sub { font-size: 11px; color: var(--text-5); margin-top: 3px; }
 
+        /* 7-day chart */
+        .chart-card {
+            max-width: 960px; margin: 0 auto 16px;
+            background: var(--surface); border-radius: 14px;
+            padding: 16px 20px 12px;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+        .chart-title { font-size: 11px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+        .chart-svg-wrap { width: 100%; }
+        .chart-svg-wrap svg { width: 100%; height: 90px; display: block; overflow: visible; }
+        .chart-bar-group { cursor: default; }
+        .chart-bar { fill: var(--chart-bar); rx: 3; transition: opacity 0.15s; }
+        .chart-bar:hover { opacity: 0.8; }
+        .chart-bar-empty { fill: var(--chart-bar-empty); }
+        .chart-lbl { font-size: 9px; fill: var(--chart-label); text-anchor: middle; font-family: -apple-system, sans-serif; }
+        .chart-amt { font-size: 8.5px; fill: var(--stat-value); text-anchor: middle; font-family: -apple-system, sans-serif; font-weight: 700; }
+
+        /* Date filter */
         .date-filter {
             max-width: 960px; margin: 0 auto 16px;
             background: var(--surface); border-radius: 14px;
@@ -154,10 +199,13 @@
         .date-sep { font-size: 12px; color: var(--text-5); }
         .date-clear {
             font-size: 12px; color: var(--text-4); background: none; border: none;
-            cursor: pointer; text-decoration: underline; margin-left: auto; padding: 0;
+            cursor: pointer; text-decoration: underline; padding: 0;
         }
         .date-clear:hover { color: #c0392b; }
+        .date-filter-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+        .filter-summary { font-size: 12px; color: var(--text-4); }
 
+        /* Table */
         .table-wrap {
             max-width: 960px; margin: 0 auto;
             background: var(--surface); border-radius: 16px;
@@ -194,7 +242,10 @@
             font-size: 10.5px; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.6px; color: var(--text-4); border-bottom: 1px solid var(--border-light);
         }
-        tbody tr { border-bottom: 1px solid var(--border-row); transition: background 0.1s; }
+        tbody tr {
+            border-bottom: 1px solid var(--border-row); transition: background 0.1s;
+            cursor: pointer;
+        }
         tbody tr:last-child { border-bottom: none; }
         tbody tr:hover { background: var(--row-hover); }
         td { padding: 11px 14px; font-size: 13px; vertical-align: middle; }
@@ -214,6 +265,86 @@
         .empty p { font-size: 14px; }
         .countdown { font-size: 11px; color: var(--text-5); }
 
+        /* Pagination */
+        .pagination {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 18px; border-top: 1px solid var(--border-light);
+            flex-wrap: wrap; gap: 10px;
+        }
+        .page-info { font-size: 12px; color: var(--text-4); }
+        .page-buttons { display: flex; gap: 4px; }
+        .page-btn {
+            padding: 4px 10px; border: 1.5px solid var(--page-btn-border);
+            border-radius: 6px; font-size: 12px; font-weight: 600;
+            background: var(--page-btn); color: var(--page-btn-text);
+            cursor: pointer; transition: all 0.15s; min-width: 32px; text-align: center;
+        }
+        .page-btn:hover:not(:disabled) { border-color: #006633; color: #006633; }
+        :root[data-theme="dark"] .page-btn:hover:not(:disabled) { color: #3fb950; border-color: #3fb950; }
+        .page-btn.active { background: var(--page-btn-active); color: #fff; border-color: var(--page-btn-active); }
+        .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* Transaction detail drawer */
+        .drawer {
+            position: fixed; inset: 0; z-index: 1000;
+            pointer-events: none;
+        }
+        .drawer.open { pointer-events: all; }
+        .drawer-overlay {
+            position: absolute; inset: 0;
+            background: var(--drawer-overlay);
+            opacity: 0; transition: opacity 0.25s;
+        }
+        .drawer.open .drawer-overlay { opacity: 1; }
+        .drawer-panel {
+            position: absolute; top: 0; right: 0; bottom: 0;
+            width: 340px; max-width: 90vw;
+            background: var(--drawer-panel);
+            box-shadow: -4px 0 30px rgba(0,0,0,0.15);
+            transform: translateX(100%);
+            transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .drawer.open .drawer-panel { transform: translateX(0); }
+        .drawer-header {
+            padding: 18px 20px; border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .drawer-header h3 { font-size: 15px; font-weight: 700; }
+        .drawer-close {
+            width: 30px; height: 30px; border-radius: 8px; border: none;
+            background: var(--surface-head); color: var(--text-3);
+            cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .drawer-close:hover { background: var(--border); }
+        .drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+        .drawer-badge-wrap { margin-bottom: 18px; }
+        .detail-grid { display: flex; flex-direction: column; gap: 2px; }
+        .detail-row {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 9px 10px; border-radius: 8px;
+        }
+        .detail-row:nth-child(even) { background: var(--detail-row-alt); }
+        .detail-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.4px; color: var(--detail-label);
+            min-width: 90px; flex-shrink: 0; margin-top: 2px;
+        }
+        .detail-value {
+            font-size: 13px; color: var(--detail-value);
+            word-break: break-all; font-family: monospace;
+        }
+        .detail-value.normal { font-family: inherit; }
+        .detail-divider {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--text-5);
+            margin: 14px 0 6px; padding-bottom: 4px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        /* Theme toggle */
         .theme-btn {
             position: fixed; bottom: 20px; right: 20px;
             width: 40px; height: 40px; border-radius: 50%;
@@ -229,6 +360,9 @@
 <body>
 
 <?php
+// ---------------------------------------------------------------
+// Load log
+// ---------------------------------------------------------------
 $logFile = __DIR__ . '/mpesa_log.json';
 $entries = [];
 
@@ -240,6 +374,9 @@ if (file_exists($logFile)) {
     }
 }
 
+// ---------------------------------------------------------------
+// Summary stats
+// ---------------------------------------------------------------
 $total     = count($entries);
 $confirmed = 0;
 $failed    = 0;
@@ -254,8 +391,40 @@ foreach ($entries as $e) {
 $pending     = $total - $confirmed - $failed;
 $successRate = $total > 0 ? round(($confirmed / $total) * 100) : 0;
 $lastUpdated = date('H:i:s');
+
+// ---------------------------------------------------------------
+// 7-day chart data
+// ---------------------------------------------------------------
+$chartDays = [];
+for ($i = 6; $i >= 0; $i--) {
+    $d = date('Y-m-d', strtotime("-$i days"));
+    $chartDays[$d] = [
+        'label'     => date('D', strtotime("-$i days")),
+        'confirmed' => 0,
+        'amount'    => 0.0,
+    ];
+}
+foreach ($entries as $e) {
+    if (($e['ResultCode'] ?? null) !== 0) continue;
+    $day = substr($e['timestamp'] ?? '', 0, 10);
+    if (isset($chartDays[$day])) {
+        $chartDays[$day]['confirmed']++;
+        $chartDays[$day]['amount'] += (float)($e['Amount'] ?? 0);
+    }
+}
+$maxCount = max(array_map(fn($d) => $d['confirmed'], $chartDays));
+if ($maxCount === 0) $maxCount = 1; // avoid division by zero
+
+// SVG chart constants
+$svgW   = 700;
+$svgH   = 68;   // usable bar area height
+$lblH   = 16;   // label row height
+$barW   = 60;
+$slotW  = $svgW / 7; // 100
+$gap    = 8;    // top padding
 ?>
 
+<!-- HEADER -->
 <div class="header">
     <div>
         <h1>Transaction Log</h1>
@@ -270,7 +439,7 @@ $lastUpdated = date('H:i:s');
             <span class="toggle-switch on" id="toggleSwitch"></span>
             Auto-refresh
         </label>
-        <a href="/export.php" class="export-btn" download>
+        <a href="/export.php" class="export-btn" id="exportBtn" download>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
@@ -282,6 +451,7 @@ $lastUpdated = date('H:i:s');
     </div>
 </div>
 
+<!-- STATS -->
 <div class="stats">
     <div class="stat-card">
         <div class="label">Total Requests</div>
@@ -305,14 +475,52 @@ $lastUpdated = date('H:i:s');
     </div>
 </div>
 
-<div class="date-filter">
-    <label>Date Range</label>
-    <input type="date" id="dateFrom" onchange="applySearch()" title="From date">
-    <span class="date-sep">—</span>
-    <input type="date" id="dateTo" onchange="applySearch()" title="To date">
-    <button class="date-clear" onclick="clearDates()">Clear dates</button>
+<!-- 7-DAY CHART -->
+<div class="chart-card">
+    <div class="chart-title">Confirmed Payments — Last 7 Days</div>
+    <div class="chart-svg-wrap">
+        <svg viewBox="0 0 <?= $svgW ?> <?= $svgH + $lblH ?>" preserveAspectRatio="none" role="img" aria-label="Last 7 days of confirmed payments">
+        <?php
+        $dayIdx = 0;
+        foreach ($chartDays as $date => $day):
+            $cx       = $slotW * $dayIdx + $slotW / 2;
+            $barH     = $day['confirmed'] > 0 ? max(4, round(($day['confirmed'] / $maxCount) * ($svgH - $gap))) : 0;
+            $barY     = $svgH - $barH;
+            $isEmpty  = $day['confirmed'] === 0;
+            $tooltip  = $day['confirmed'] > 0
+                ? $day['confirmed'] . ' payment' . ($day['confirmed'] !== 1 ? 's' : '') . ' — KES ' . number_format($day['amount'], 2)
+                : 'No confirmed payments';
+        ?>
+            <g class="chart-bar-group">
+                <title><?= htmlspecialchars($date . ': ' . $tooltip) ?></title>
+                <?php if ($isEmpty): ?>
+                    <rect x="<?= $cx - $barW/2 ?>" y="<?= $svgH - 3 ?>" width="<?= $barW ?>" height="3" rx="2" class="chart-bar-empty"/>
+                <?php else: ?>
+                    <rect x="<?= $cx - $barW/2 ?>" y="<?= $barY ?>" width="<?= $barW ?>" height="<?= $barH ?>" rx="3" class="chart-bar"/>
+                    <?php if ($barH > 16): ?>
+                    <text x="<?= $cx ?>" y="<?= $barY + 11 ?>" class="chart-amt"><?= $day['confirmed'] ?></text>
+                    <?php endif; ?>
+                <?php endif; ?>
+                <text x="<?= $cx ?>" y="<?= $svgH + $lblH - 2 ?>" class="chart-lbl"><?= $day['label'] ?></text>
+            </g>
+        <?php $dayIdx++; endforeach; ?>
+        </svg>
+    </div>
 </div>
 
+<!-- DATE FILTER -->
+<div class="date-filter">
+    <label>Date Range</label>
+    <input type="date" id="dateFrom" onchange="onFilterChange()" title="From date">
+    <span class="date-sep">—</span>
+    <input type="date" id="dateTo" onchange="onFilterChange()" title="To date">
+    <div class="date-filter-right">
+        <span class="filter-summary" id="filterSummary"></span>
+        <button class="date-clear" onclick="clearDates()">Clear dates</button>
+    </div>
+</div>
+
+<!-- TABLE -->
 <div class="table-wrap">
     <div class="table-toolbar">
         <div class="toolbar-left">
@@ -328,7 +536,7 @@ $lastUpdated = date('H:i:s');
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--text-5)">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
-            <input type="text" id="searchInput" placeholder="Search phone or receipt…" oninput="applySearch()">
+            <input type="text" id="searchInput" placeholder="Search phone or receipt…" oninput="onFilterChange()">
         </div>
     </div>
 
@@ -354,18 +562,26 @@ $lastUpdated = date('H:i:s');
         </thead>
         <tbody>
         <?php foreach (array_reverse($entries) as $i => $e):
-            $rc      = $e['ResultCode'] ?? null;
-            $status  = ($rc === null) ? 'pending' : ($rc === 0 ? 'success' : 'failed');
-            $label   = ($rc === null) ? 'Pending'  : ($rc === 0 ? 'Confirmed' : 'Failed');
-            $icon    = ($rc === null) ? '⏳'        : ($rc === 0 ? '✅' : '❌');
+            $rc       = $e['ResultCode'] ?? null;
+            $status   = ($rc === null) ? 'pending' : ($rc === 0 ? 'success' : 'failed');
+            $label    = ($rc === null) ? 'Pending'  : ($rc === 0 ? 'Confirmed' : 'Failed');
+            $icon     = ($rc === null) ? '⏳'        : ($rc === 0 ? '✅' : '❌');
             $rawPhone = (string)($e['PhoneNumber'] ?? '');
-            $phone   = $rawPhone ? '0' . substr($rawPhone, 3) : '—';
-            $amount  = isset($e['Amount']) ? 'KES ' . number_format((float)$e['Amount'], 2) : '—';
-            $receipt = $e['MpesaReceiptNumber'] ?? '—';
-            $date    = $e['timestamp'] ?? '—';
-            $desc    = $e['ResultDesc'] ?? '—';
+            $phone    = $rawPhone ? '0' . substr($rawPhone, 3) : '—';
+            $amount   = isset($e['Amount']) ? 'KES ' . number_format((float)$e['Amount'], 2) : '—';
+            $receipt  = $e['MpesaReceiptNumber'] ?? '—';
+            $date     = $e['timestamp'] ?? '—';
+            $desc     = $e['ResultDesc'] ?? '—';
+            $txJson   = htmlspecialchars(json_encode($e), ENT_QUOTES, 'UTF-8');
         ?>
-        <tr data-status="<?= $status ?>" data-date="<?= substr($date, 0, 10) ?>" data-search="<?= strtolower(htmlspecialchars($phone . ' ' . $receipt)) ?>">
+        <tr
+            data-status="<?= $status ?>"
+            data-date="<?= substr($date, 0, 10) ?>"
+            data-search="<?= strtolower(htmlspecialchars($phone . ' ' . $receipt)) ?>"
+            data-tx="<?= $txJson ?>"
+            onclick="openDrawer(this)"
+            title="Click to view full details"
+        >
             <td style="color:var(--text-6);font-size:12px"><?= $total - $i ?></td>
             <td style="white-space:nowrap;color:var(--text-8)"><?= htmlspecialchars($date) ?></td>
             <td class="phone"><?= htmlspecialchars($phone) ?></td>
@@ -377,8 +593,21 @@ $lastUpdated = date('H:i:s');
         <?php endforeach; ?>
         </tbody>
     </table>
-    <div class="no-results" id="noResults">No transactions match your search.</div>
+    <div class="no-results" id="noResults">No transactions match your filters.</div>
+    <div class="pagination" id="pagination" style="display:none"></div>
     <?php endif; ?>
+</div>
+
+<!-- DETAIL DRAWER -->
+<div class="drawer" id="drawer">
+    <div class="drawer-overlay" onclick="closeDrawer()"></div>
+    <div class="drawer-panel">
+        <div class="drawer-header">
+            <h3>Transaction Details</h3>
+            <button class="drawer-close" onclick="closeDrawer()" title="Close">✕</button>
+        </div>
+        <div class="drawer-body" id="drawerBody"></div>
+    </div>
 </div>
 
 <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle dark mode"></button>
@@ -398,11 +627,9 @@ $lastUpdated = date('H:i:s');
     updateThemeIcon();
 
     // ---- Auto-refresh ----
-    let currentFilter = 'all';
-    let autoRefresh   = true;
-    let countdown     = 30;
-    let timer         = null;
-
+    let autoRefresh = true;
+    let countdown   = 30;
+    let timer       = null;
     const toggleSwitch = document.getElementById('toggleSwitch');
     const countdownEl  = document.getElementById('countdown');
 
@@ -421,44 +648,199 @@ $lastUpdated = date('H:i:s');
             if (countdown <= 0) window.location.reload();
         }, 1000);
     }
-
     if (autoRefresh) startCountdown();
 
-    // ---- Filter ----
+    // ---- Filter + search + pagination state ----
+    const PAGE_SIZE    = 20;
+    let currentFilter  = 'all';
+    let currentPage    = 1;
+    let visibleRows    = [];
+
     function applyFilter(type, btn) {
         currentFilter = type;
         document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
+        onFilterChange();
+    }
+
+    function onFilterChange() {
+        updateExportLink();
         applySearch();
     }
 
-    // ---- Search + date filter ----
     function applySearch() {
         const q        = document.getElementById('searchInput').value.toLowerCase().trim();
         const dateFrom = document.getElementById('dateFrom').value;
         const dateTo   = document.getElementById('dateTo').value;
-        let visible = 0;
 
+        visibleRows = [];
         document.querySelectorAll('#txTable tbody tr').forEach(row => {
             const matchFilter = currentFilter === 'all' || row.dataset.status === currentFilter;
             const matchSearch = !q || row.dataset.search.includes(q);
             const rowDate     = row.dataset.date || '';
             const matchFrom   = !dateFrom || rowDate >= dateFrom;
             const matchTo     = !dateTo   || rowDate <= dateTo;
-            const show = matchFilter && matchSearch && matchFrom && matchTo;
-            row.style.display = show ? '' : 'none';
-            if (show) visible++;
+            if (matchFilter && matchSearch && matchFrom && matchTo) {
+                visibleRows.push(row);
+            }
+            row.style.display = 'none';
         });
 
+        currentPage = 1;
+        renderPage();
+        renderPagination();
+        updateFilterSummary(visibleRows.length);
+    }
+
+    function renderPage() {
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end   = start + PAGE_SIZE;
+        visibleRows.forEach((row, i) => {
+            row.style.display = (i >= start && i < end) ? '' : 'none';
+        });
         const noRes = document.getElementById('noResults');
-        if (noRes) noRes.style.display = visible === 0 ? 'block' : 'none';
+        if (noRes) noRes.style.display = visibleRows.length === 0 ? 'block' : 'none';
+    }
+
+    function renderPagination() {
+        const el    = document.getElementById('pagination');
+        if (!el) return;
+        const total = visibleRows.length;
+        const pages = Math.ceil(total / PAGE_SIZE);
+
+        if (pages <= 1) { el.style.display = 'none'; return; }
+        el.style.display = 'flex';
+
+        const start = (currentPage - 1) * PAGE_SIZE + 1;
+        const end   = Math.min(currentPage * PAGE_SIZE, total);
+
+        let btns = '';
+        btns += `<span class="page-info">Showing ${start}–${end} of ${total}</span>`;
+        btns += '<div class="page-buttons">';
+        btns += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
+
+        const maxBtns = 7;
+        let startPage = Math.max(1, currentPage - 3);
+        let endPage   = Math.min(pages, startPage + maxBtns - 1);
+        if (endPage - startPage < maxBtns - 1) startPage = Math.max(1, endPage - maxBtns + 1);
+
+        if (startPage > 1) {
+            btns += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+            if (startPage > 2) btns += `<button class="page-btn" disabled>…</button>`;
+        }
+        for (let p = startPage; p <= endPage; p++) {
+            btns += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
+        }
+        if (endPage < pages) {
+            if (endPage < pages - 1) btns += `<button class="page-btn" disabled>…</button>`;
+            btns += `<button class="page-btn" onclick="goToPage(${pages})">${pages}</button>`;
+        }
+
+        btns += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''}>Next ›</button>`;
+        btns += '</div>';
+        el.innerHTML = btns;
+    }
+
+    function goToPage(page) {
+        const pages = Math.ceil(visibleRows.length / PAGE_SIZE);
+        if (page < 1 || page > pages) return;
+        currentPage = page;
+        renderPage();
+        renderPagination();
+        document.querySelector('.table-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function updateFilterSummary(count) {
+        const el = document.getElementById('filterSummary');
+        if (!el) return;
+        const total = document.querySelectorAll('#txTable tbody tr').length;
+        el.textContent = count < total ? `${count} of ${total} shown` : '';
     }
 
     function clearDates() {
         document.getElementById('dateFrom').value = '';
         document.getElementById('dateTo').value   = '';
-        applySearch();
+        onFilterChange();
     }
+
+    // ---- Export link with date filter ----
+    function updateExportLink() {
+        const from = document.getElementById('dateFrom').value;
+        const to   = document.getElementById('dateTo').value;
+        let url = '/export.php';
+        const p = [];
+        if (from) p.push('from=' + encodeURIComponent(from));
+        if (to)   p.push('to='   + encodeURIComponent(to));
+        if (p.length) url += '?' + p.join('&');
+        const btn = document.getElementById('exportBtn');
+        if (btn) btn.href = url;
+    }
+
+    // ---- Transaction detail drawer ----
+    function openDrawer(row) {
+        const tx = JSON.parse(row.dataset.tx);
+        const rc = tx.ResultCode;
+        const status  = (rc === null || rc === undefined) ? 'pending' : (rc === 0 ? 'success' : 'failed');
+        const label   = (rc === null || rc === undefined) ? 'Pending' : (rc === 0 ? 'Confirmed' : 'Failed');
+        const icon    = (rc === null || rc === undefined) ? '⏳' : (rc === 0 ? '✅' : '❌');
+        const rawPhone = String(tx.PhoneNumber || '');
+        const phone   = rawPhone ? '0' + rawPhone.slice(3) : '—';
+        const amount  = tx.Amount ? 'KES ' + Number(tx.Amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
+
+        const badgeClass = {'success':'badge success','failed':'badge failed','pending':'badge pending'}[status];
+
+        const rows = [
+            ['Status',     `<span class="${badgeClass}">${icon} ${label}</span>`, true],
+            ['Phone',      phone],
+            ['Amount',     amount],
+            ['Receipt',    tx.MpesaReceiptNumber || '—'],
+            ['Date',       tx.timestamp || '—'],
+            ['Description',tx.ResultDesc || '—'],
+            ['Reference',  tx.AccountReference || tx.reference || '—'],
+        ];
+
+        const techRows = [
+            ['Result Code',  String(rc ?? '—')],
+            ['Merchant ID',  tx.MerchantRequestID || '—'],
+            ['Checkout ID',  tx.CheckoutRequestID || '—'],
+        ];
+
+        let html = '<div class="detail-grid">';
+        rows.forEach(([lbl, val, isHtml]) => {
+            html += `<div class="detail-row">
+                <span class="detail-label">${esc(lbl)}</span>
+                <span class="detail-value normal">${isHtml ? val : esc(String(val))}</span>
+            </div>`;
+        });
+        html += '</div>';
+        html += '<div class="detail-divider">Technical Details</div>';
+        html += '<div class="detail-grid">';
+        techRows.forEach(([lbl, val]) => {
+            html += `<div class="detail-row">
+                <span class="detail-label">${esc(lbl)}</span>
+                <span class="detail-value">${esc(String(val))}</span>
+            </div>`;
+        });
+        html += '</div>';
+
+        document.getElementById('drawerBody').innerHTML = html;
+        document.getElementById('drawer').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+        document.getElementById('drawer').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+    function esc(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ---- Init ----
+    applySearch();
 </script>
 </body>
 </html>
