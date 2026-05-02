@@ -33,22 +33,32 @@ No frameworks. No build tools. Plain PHP + vanilla JS.
 
 Switch providers by changing one constant in `config.php` — no other code changes needed.
 
-| Provider | Type | Flow | Required credentials |
+| Provider | Countries | Flow | Required credentials |
 |---|---|---|---|
-| **TinyPesa** (default) | M-Pesa STK Push | Phone PIN prompt | `TINYPESA_API_KEY` |
-| **Safaricom Daraja** | M-Pesa STK Push | Phone PIN prompt | `DARAJA_CONSUMER_KEY`, `DARAJA_CONSUMER_SECRET`, `DARAJA_SHORTCODE`, `DARAJA_PASSKEY`, `DARAJA_CALLBACK_URL` |
-| **PesaPal V3** | Hosted checkout | Browser redirect | `PESAPAL_CONSUMER_KEY`, `PESAPAL_CONSUMER_SECRET`, `PESAPAL_IPN_URL`, `PESAPAL_CALLBACK_URL` |
-| **Flutterwave** | Hosted checkout | Browser redirect | `FLW_SECRET_KEY`, `FLW_PUBLIC_KEY`, `FLW_REDIRECT_URL` |
+| **TinyPesa** (default) | Kenya | STK Push | `TINYPESA_API_KEY` |
+| **Safaricom Daraja** | Kenya | STK Push | `DARAJA_CONSUMER_KEY`, `DARAJA_CONSUMER_SECRET`, `DARAJA_SHORTCODE`, `DARAJA_PASSKEY` |
+| **PesaPal V3** | Kenya, Uganda, Tanzania, Rwanda + more | Hosted checkout | `PESAPAL_CONSUMER_KEY`, `PESAPAL_CONSUMER_SECRET`, `PESAPAL_IPN_URL` |
+| **Flutterwave** | 30+ African countries | Hosted checkout | `FLW_SECRET_KEY`, `FLW_PUBLIC_KEY`, `FLW_REDIRECT_URL` |
+| **Paystack** | Nigeria, Ghana, Kenya, South Africa, Egypt + more | Hosted checkout | `PAYSTACK_SECRET_KEY`, `PAYSTACK_CALLBACK_URL` |
+| **MTN MoMo** | Ghana, Uganda, Côte d'Ivoire, Cameroon, Zambia, Rwanda + more | STK-style push | `MTNMOMO_SUBSCRIPTION_KEY`, `MTNMOMO_API_USER`, `MTNMOMO_API_KEY` |
+| **Airtel Money** | Kenya, Uganda, Tanzania, Rwanda, Zambia, DRC + more | STK-style push | `AIRTEL_CLIENT_ID`, `AIRTEL_CLIENT_SECRET` |
+| **DPO Pay** | 20+ African countries | Hosted checkout | `DPO_COMPANY_TOKEN`, `DPO_SERVICE_TYPE`, `DPO_REDIRECT_URL` |
+| **Ozow** | South Africa | Instant EFT | `OZOW_SITE_CODE`, `OZOW_PRIVATE_KEY`, `OZOW_API_KEY` |
 
-**STK Push** providers send a PIN prompt directly to the customer's phone — no redirect needed.  
+**STK / STK-style push** providers send a payment prompt directly to the customer's phone — no browser redirect needed.  
 **Hosted checkout** providers redirect the customer to a payment page in their browser.
 
 ```php
 // config.php — choose one
-define('PAYMENT_PROVIDER', 'tinypesa');    // default
-define('PAYMENT_PROVIDER', 'daraja');
-define('PAYMENT_PROVIDER', 'pesapal');
-define('PAYMENT_PROVIDER', 'flutterwave');
+define('PAYMENT_PROVIDER', 'tinypesa');     // default — M-Pesa Kenya
+define('PAYMENT_PROVIDER', 'daraja');       // Safaricom direct — M-Pesa Kenya
+define('PAYMENT_PROVIDER', 'pesapal');      // East Africa hosted checkout
+define('PAYMENT_PROVIDER', 'flutterwave'); // Pan-African hosted checkout
+define('PAYMENT_PROVIDER', 'paystack');    // West + East + South Africa
+define('PAYMENT_PROVIDER', 'mtnmomo');     // MTN Mobile Money push
+define('PAYMENT_PROVIDER', 'airtelmoney'); // Airtel Money push
+define('PAYMENT_PROVIDER', 'dpopay');      // DPO Pay — 20+ African countries
+define('PAYMENT_PROVIDER', 'ozow');        // South Africa instant EFT
 ```
 
 ---
@@ -391,6 +401,46 @@ Developer-only tool to simulate M-Pesa callbacks without making a real payment. 
 3. Set `FLW_REDIRECT_URL` to where Flutterwave should redirect the user after payment
 4. In the Flutterwave dashboard under **Webhooks**, set the webhook URL to `https://yourdomain.com/callback_flutterwave.php` and copy the Secret Hash into `FLW_SECRET_HASH`
 
+### Paystack
+
+1. Sign up at [paystack.com](https://paystack.com) and go to **Settings → API Keys & Webhooks**
+2. Copy your Secret Key and set `PAYMENT_PROVIDER = 'paystack'` and `PAYSTACK_SECRET_KEY`
+3. Set `PAYSTACK_CALLBACK_URL` to where Paystack redirects the customer after payment
+4. In the Paystack dashboard under **Webhooks**, set the webhook URL to `https://yourdomain.com/callback_paystack.php` — Paystack signs every webhook with your secret key (HMAC-SHA512, verified automatically)
+5. Set `PAYSTACK_CURRENCY` to match your country: `NGN` (Nigeria), `GHS` (Ghana), `KES` (Kenya), `ZAR` (South Africa)
+
+### MTN Mobile Money (MoMo)
+
+1. Register at [momodeveloper.mtn.com](https://momodeveloper.mtn.com) and subscribe to the **Collection** product
+2. Note your Subscription Key, then use the sandbox provisioning API (or MTN tools) to create an API User and API Key
+3. Set `PAYMENT_PROVIDER = 'mtnmomo'` and fill in `MTNMOMO_SUBSCRIPTION_KEY`, `MTNMOMO_API_USER`, `MTNMOMO_API_KEY`
+4. Set `MTNMOMO_CALLBACK_URL` to `https://yourdomain.com/callback_mtnmomo.php`
+5. Set `MTNMOMO_CURRENCY` to match the customer's country: `GHS` (Ghana), `UGX` (Uganda), `ZMW` (Zambia), `RWF` (Rwanda), etc.
+
+### Airtel Money
+
+1. Register at [developers.airtel.africa](https://developers.airtel.africa) and create an app under the **Merchant** API
+2. Note your Client ID and Client Secret
+3. Set `PAYMENT_PROVIDER = 'airtelmoney'` and fill in `AIRTEL_CLIENT_ID`, `AIRTEL_CLIENT_SECRET`
+4. Set `AIRTEL_CALLBACK_URL` to `https://yourdomain.com/callback_airtelmoney.php`
+5. Set `AIRTEL_COUNTRY` (`KE`, `UG`, `TZ`, `RW`, `ZM`…) and `AIRTEL_CURRENCY` to match the customer's country
+
+### DPO Pay
+
+1. Sign up at [dpopay.com](https://dpopay.com) to get your Company Token and Service Type number
+2. Set `PAYMENT_PROVIDER = 'dpopay'` and fill in `DPO_COMPANY_TOKEN`, `DPO_SERVICE_TYPE`
+3. Set `DPO_REDIRECT_URL` to `https://yourdomain.com/callback_dpopay.php` — DPO redirects the customer here after payment and this file verifies the transaction with DPO's `verifyToken` API
+4. Set `DPO_BACK_URL` to your homepage or cart page (shown if the customer clicks Back)
+5. Set `DPO_CURRENCY` and `DPO_COUNTRY_CODE` to match your market
+
+### Ozow (South Africa)
+
+1. Sign up at [ozow.com](https://ozow.com) and obtain your Site Code, Private Key, and API Key from the merchant portal
+2. Set `PAYMENT_PROVIDER = 'ozow'` and fill in `OZOW_SITE_CODE`, `OZOW_PRIVATE_KEY`, `OZOW_API_KEY`
+3. Set `OZOW_NOTIFY_URL` to `https://yourdomain.com/callback_ozow.php` — Ozow POSTs here when a payment resolves; the hash is verified against your Private Key
+4. Set `OZOW_SUCCESS_URL`, `OZOW_CANCEL_URL`, `OZOW_ERROR_URL` to the pages shown to the customer after each outcome
+5. Keep `OZOW_TEST = true` during development; set to `false` for live payments
+
 ---
 
 ## Security Notes
@@ -402,6 +452,9 @@ Developer-only tool to simulate M-Pesa callbacks without making a real payment. 
 - **`webhook_test.php`** is a development tool — remove it or restrict access in production.
 - **Rate limiting** is file-based (uses `sys_get_temp_dir()`). For high-traffic deployments, consider replacing it with Redis or a database-backed approach.
 - **Flutterwave webhooks** are signature-verified via `FLW_SECRET_HASH` — always set this in production.
+- **Paystack webhooks** are HMAC-SHA512 verified using `PAYSTACK_SECRET_KEY` — verification is automatic.
+- **Ozow notifications** are SHA512 hash-verified using `OZOW_PRIVATE_KEY` — always keep it secret.
+- **MTN MoMo** does not sign webhook payloads — rely on HTTPS and optionally query the status endpoint to confirm.
 - Callback URLs must be HTTPS endpoints reachable from the internet. Use [ngrok](https://ngrok.com) for local development.
 
 ---

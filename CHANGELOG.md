@@ -7,6 +7,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-05-02
+
+### Added
+- **Paystack provider** (`providers/paystack.php`) — hosted checkout; supports Nigeria, Ghana, Kenya, South Africa, Egypt + more; HMAC-SHA512 webhook verification in `callback_paystack.php`
+- **MTN MoMo provider** (`providers/mtnmomo.php`) — STK-style Collection API; OAuth token via Basic auth; UUID reference ID; supports Ghana, Uganda, Côte d'Ivoire, Cameroon, Zambia, Rwanda + more; callback in `callback_mtnmomo.php`
+- **Airtel Money provider** (`providers/airtelmoney.php`) — STK-style Merchant Payments API; OAuth2 client credentials; supports Kenya, Uganda, Tanzania, Rwanda, Zambia, DRC + more; callback in `callback_airtelmoney.php`
+- **DPO Pay provider** (`providers/dpopay.php`) — XML-based v6 API; createToken then redirect; verifyToken on callback; 20+ African countries; callback/verify in `callback_dpopay.php`
+- **Ozow provider** (`providers/ozow.php`) — South Africa instant EFT; SHA512 hash signing; `callback_ozow.php` verifies notification hash before logging
+- **Five dedicated callback endpoints**: `callback_paystack.php`, `callback_mtnmomo.php`, `callback_airtelmoney.php`, `callback_dpopay.php`, `callback_ozow.php`
+- **Provider logos** in `logos/` for all 9 providers: `tinypesa.png`, `daraja.svg`, `pesapal.png`, `flutterwave_32.png`, `paystack.png`, `mtnmomo.svg`, `airtelmoney.png`, `dpopay.png`, `ozow.png`
+- Admin panel Provider badge now shows official logos for all 9 providers (table + detail drawer)
+- `health.php` credential checks for all 5 new providers with environment/currency/country details
+- `config.example.php` — 5 new provider sections with all required constants, supported countries, and currency codes
+
+### Improved
+- `stk_push.php` — provider loaded before phone validation; strict Kenyan format required only for STK providers; redirect providers accept international phone numbers
+- README — providers table updated with country coverage; `config.php` code block lists all 9 providers; Provider Configuration section has step-by-step guides for Paystack, MTN MoMo, Airtel Money, DPO Pay, and Ozow; Security Notes updated with Paystack/Ozow/MTN signing notes
+
 ## [1.5.0] — 2026-05-02
 
 ### Added

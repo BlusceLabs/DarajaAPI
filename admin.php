@@ -554,9 +554,9 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             $date          = $e['timestamp'] ?? '—';
             $desc          = $e['ResultDesc'] ?? '—';
             $provider      = $e['provider'] ?? 'tinypesa';
-            $providerNames = ['tinypesa' => 'TinyPesa', 'daraja' => 'Daraja', 'pesapal' => 'PesaPal', 'flutterwave' => 'Flutterwave'];
+            $providerNames = ['tinypesa' => 'TinyPesa', 'daraja' => 'Daraja', 'pesapal' => 'PesaPal', 'flutterwave' => 'Flutterwave', 'paystack' => 'Paystack', 'mtnmomo' => 'MTN MoMo', 'airtelmoney' => 'Airtel Money', 'dpopay' => 'DPO Pay', 'ozow' => 'Ozow'];
             $providerLabel = $providerNames[$provider] ?? ucfirst($provider);
-            $providerLogos = ['tinypesa' => '/logos/tinypesa.png', 'daraja' => '/logos/daraja.svg', 'pesapal' => '/logos/pesapal.png', 'flutterwave' => '/logos/flutterwave_32.png'];
+            $providerLogos = ['tinypesa' => '/logos/tinypesa.png', 'daraja' => '/logos/daraja.svg', 'pesapal' => '/logos/pesapal.png', 'flutterwave' => '/logos/flutterwave_32.png', 'paystack' => '/logos/paystack.png', 'mtnmomo' => '/logos/mtnmomo.svg', 'airtelmoney' => '/logos/airtelmoney.png', 'dpopay' => '/logos/dpopay.png', 'ozow' => '/logos/ozow.png'];
             $providerLogo  = $providerLogos[$provider] ?? null;
             $txJson        = htmlspecialchars(json_encode($e), ENT_QUOTES, 'UTF-8');
             $rowNum        = $total - $i;
@@ -813,9 +813,9 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             : '—';
         const bCls = {'success':'badge success','failed':'badge failed','pending':'badge pending'}[status];
 
-        const providerNames = {tinypesa:'TinyPesa', daraja:'Daraja', pesapal:'PesaPal', flutterwave:'Flutterwave'};
+        const providerNames = {tinypesa:'TinyPesa', daraja:'Daraja', pesapal:'PesaPal', flutterwave:'Flutterwave', paystack:'Paystack', mtnmomo:'MTN MoMo', airtelmoney:'Airtel Money', dpopay:'DPO Pay', ozow:'Ozow'};
         const providerLabel = providerNames[tx.provider] || (tx.provider ? tx.provider.charAt(0).toUpperCase() + tx.provider.slice(1) : 'TinyPesa');
-        const providerLogos = {tinypesa:'/logos/tinypesa.png', daraja:'/logos/daraja.svg', pesapal:'/logos/pesapal.png', flutterwave:'/logos/flutterwave_32.png'};
+        const providerLogos = {tinypesa:'/logos/tinypesa.png', daraja:'/logos/daraja.svg', pesapal:'/logos/pesapal.png', flutterwave:'/logos/flutterwave_32.png', paystack:'/logos/paystack.png', mtnmomo:'/logos/mtnmomo.svg', airtelmoney:'/logos/airtelmoney.png', dpopay:'/logos/dpopay.png', ozow:'/logos/ozow.png'};
         const provLogo = providerLogos[tx.provider] ? `<img class="prov-logo" src="${providerLogos[tx.provider]}" alt="" style="height:14px;width:auto;vertical-align:middle;margin-right:3px">` : '';
         const rows = [
             ['Status',      `<span class="${bCls}">${icon} ${label}</span>`, true],

@@ -190,10 +190,15 @@ degradeOverall($overall, $configStatus);
 // ---- Load config and determine active provider ----
 $activeProvider = 'tinypesa';
 $providerLabels = [
-    'tinypesa'    => ['TinyPesa',      'stk',      '📱'],
-    'daraja'      => ['Safaricom Daraja', 'stk',   '📱'],
-    'pesapal'     => ['PesaPal V3',    'redirect',  '🌐'],
-    'flutterwave' => ['Flutterwave',   'redirect',  '🌐'],
+    'tinypesa'    => ['TinyPesa',        'stk',      '📱'],
+    'daraja'      => ['Safaricom Daraja','stk',      '📱'],
+    'pesapal'     => ['PesaPal V3',      'redirect', '🌐'],
+    'flutterwave' => ['Flutterwave',     'redirect', '🌐'],
+    'paystack'    => ['Paystack',        'redirect', '🌐'],
+    'mtnmomo'     => ['MTN MoMo',        'stk',      '📱'],
+    'airtelmoney' => ['Airtel Money',    'stk',      '📱'],
+    'dpopay'      => ['DPO Pay',         'redirect', '🌐'],
+    'ozow'        => ['Ozow',            'redirect', '🌐'],
 ];
 
 if ($configExists) {
@@ -249,6 +254,72 @@ switch ($activeProvider) {
         $providerChecks[] = ['Flutterwave Public Key',   $pk ? 'Configured' : 'Not set or placeholder', $pk ? 'ok' : 'warning', $pk ? 'Set' : 'Not Set'];
         $providerChecks[] = ['Flutterwave Redirect URL', $ru ? (FLW_REDIRECT_URL) : 'Not set', $ru ? 'ok' : 'warning', $ru ? 'Set' : 'Not Set'];
         $providerChecks[] = ['Webhook Secret Hash',      $sh ? 'Configured — webhooks will be verified' : 'Not set — webhook signature verification disabled', $sh ? 'ok' : 'warning', $sh ? 'Set' : 'Not Set'];
+        break;
+
+    case 'paystack':
+        $sk = defined('PAYSTACK_SECRET_KEY')   && strlen(PAYSTACK_SECRET_KEY)   > 10 && PAYSTACK_SECRET_KEY !== 'YOUR_PAYSTACK_SECRET_KEY';
+        $cb = defined('PAYSTACK_CALLBACK_URL') && strpos(PAYSTACK_CALLBACK_URL, 'http') === 0;
+        $cu = defined('PAYSTACK_CURRENCY')     ? PAYSTACK_CURRENCY : 'KES';
+        $providerChecks[] = ['Paystack Secret Key',    $sk ? 'Configured' : 'Not set or placeholder', $sk ? 'ok' : 'warning', $sk ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Paystack Callback URL',  $cb ? (PAYSTACK_CALLBACK_URL) : 'Not set — set to your public HTTPS callback URL', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Paystack Currency',      'Currently: ' . $cu . ' (set PAYSTACK_CURRENCY to change)', 'ok', $cu];
+        $providerChecks[] = ['Webhook URL',            'Set in Paystack dashboard → Settings → Webhooks → callback_paystack.php', 'ok', 'Info'];
+        break;
+
+    case 'mtnmomo':
+        $sub = defined('MTNMOMO_SUBSCRIPTION_KEY') && strlen(MTNMOMO_SUBSCRIPTION_KEY) > 5;
+        $usr = defined('MTNMOMO_API_USER')         && strlen(MTNMOMO_API_USER)         > 5;
+        $key = defined('MTNMOMO_API_KEY')          && strlen(MTNMOMO_API_KEY)          > 5;
+        $cb  = defined('MTNMOMO_CALLBACK_URL')     && strpos(MTNMOMO_CALLBACK_URL, 'http') === 0;
+        $env = defined('MTNMOMO_ENV') ? MTNMOMO_ENV : 'sandbox';
+        $cur = defined('MTNMOMO_CURRENCY') ? MTNMOMO_CURRENCY : 'UGX';
+        $providerChecks[] = ['MTN Subscription Key', $sub ? 'Configured' : 'Not set', $sub ? 'ok' : 'warning', $sub ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['MTN API User',         $usr ? 'Configured' : 'Not set', $usr ? 'ok' : 'warning', $usr ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['MTN API Key',          $key ? 'Configured' : 'Not set', $key ? 'ok' : 'warning', $key ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['MTN Callback URL',     $cb  ? (MTNMOMO_CALLBACK_URL) : 'Not set — set to callback_mtnmomo.php', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['MTN Environment',      'Currently: ' . $env . ' — Currency: ' . $cur, 'ok', strtoupper($env)];
+        break;
+
+    case 'airtelmoney':
+        $ci  = defined('AIRTEL_CLIENT_ID')     && strlen(AIRTEL_CLIENT_ID)     > 5;
+        $cs  = defined('AIRTEL_CLIENT_SECRET') && strlen(AIRTEL_CLIENT_SECRET) > 5;
+        $cb  = defined('AIRTEL_CALLBACK_URL')  && strpos(AIRTEL_CALLBACK_URL, 'http') === 0;
+        $env = defined('AIRTEL_ENV')      ? AIRTEL_ENV      : 'sandbox';
+        $cur = defined('AIRTEL_CURRENCY') ? AIRTEL_CURRENCY : 'KES';
+        $ctr = defined('AIRTEL_COUNTRY')  ? AIRTEL_COUNTRY  : 'KE';
+        $providerChecks[] = ['Airtel Client ID',     $ci ? 'Configured' : 'Not set', $ci ? 'ok' : 'warning', $ci ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Airtel Client Secret', $cs ? 'Configured' : 'Not set', $cs ? 'ok' : 'warning', $cs ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Airtel Callback URL',  $cb ? (AIRTEL_CALLBACK_URL) : 'Not set — set to callback_airtelmoney.php', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Airtel Environment',   'Currently: ' . $env . ' — Country: ' . $ctr . ' — Currency: ' . $cur, 'ok', strtoupper($env)];
+        break;
+
+    case 'dpopay':
+        $ct  = defined('DPO_COMPANY_TOKEN') && strlen(DPO_COMPANY_TOKEN) > 5 && DPO_COMPANY_TOKEN !== 'YOUR_DPO_COMPANY_TOKEN';
+        $sv  = defined('DPO_SERVICE_TYPE')  && strlen(DPO_SERVICE_TYPE)  > 0;
+        $ru  = defined('DPO_REDIRECT_URL')  && strpos(DPO_REDIRECT_URL, 'http') === 0;
+        $bu  = defined('DPO_BACK_URL')      && strpos(DPO_BACK_URL, 'http') === 0;
+        $env = defined('DPO_ENV') ? DPO_ENV : 'sandbox';
+        $cur = defined('DPO_CURRENCY') ? DPO_CURRENCY : 'KES';
+        $providerChecks[] = ['DPO Company Token',  $ct ? 'Configured' : 'Not set or placeholder', $ct ? 'ok' : 'warning', $ct ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['DPO Service Type',   $sv ? (DPO_SERVICE_TYPE) : 'Not set — enter your DPO service type number', $sv ? 'ok' : 'warning', $sv ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['DPO Redirect URL',   $ru ? (DPO_REDIRECT_URL) : 'Not set — set to callback_dpopay.php', $ru ? 'ok' : 'warning', $ru ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['DPO Back URL',       $bu ? (DPO_BACK_URL) : 'Not set — set to your homepage or cart', $bu ? 'ok' : 'warning', $bu ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['DPO Environment',    'Currently: ' . $env . ' — Currency: ' . $cur, 'ok', strtoupper($env)];
+        break;
+
+    case 'ozow':
+        $sc  = defined('OZOW_SITE_CODE')    && strlen(OZOW_SITE_CODE)    > 2;
+        $pk  = defined('OZOW_PRIVATE_KEY')  && strlen(OZOW_PRIVATE_KEY)  > 5;
+        $ak  = defined('OZOW_API_KEY')      && strlen(OZOW_API_KEY)      > 5;
+        $nu  = defined('OZOW_NOTIFY_URL')   && strpos(OZOW_NOTIFY_URL, 'http') === 0;
+        $su  = defined('OZOW_SUCCESS_URL')  && strpos(OZOW_SUCCESS_URL, 'http') === 0;
+        $tst = defined('OZOW_TEST')         && OZOW_TEST;
+        $providerChecks[] = ['Ozow Site Code',    $sc ? 'Configured' : 'Not set', $sc ? 'ok' : 'warning', $sc ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Ozow Private Key',  $pk ? 'Configured' : 'Not set', $pk ? 'ok' : 'warning', $pk ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Ozow API Key',      $ak ? 'Configured' : 'Not set', $ak ? 'ok' : 'warning', $ak ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Notify URL',        $nu ? (OZOW_NOTIFY_URL) : 'Not set — set to callback_ozow.php', $nu ? 'ok' : 'warning', $nu ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Success URL',       $su ? (OZOW_SUCCESS_URL) : 'Not set', $su ? 'ok' : 'warning', $su ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Test Mode',         $tst ? 'ENABLED — use test bank credentials from Ozow dashboard' : 'Disabled — live payments', $tst ? 'warning' : 'ok', $tst ? 'Test' : 'Live'];
         break;
 
     default:

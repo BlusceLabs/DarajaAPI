@@ -63,23 +63,8 @@ if (!is_numeric($amount) || (float)$amount < 1 || (float)$amount > 150000) {
     exit();
 }
 
-// Normalise phone to 254XXXXXXXXX
-$phone = preg_replace('/^(\+254|254|0)/', '', $phone);
-if (!preg_match('/^(7|1)\d{8}$/', $phone)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid Safaricom phone number. Use 07XX or 01XX format.']);
-    exit();
-}
-$phone = '254' . $phone;
-
-// Sanitise reference (alphanumeric + hyphens, max 12 chars)
-$reference = preg_replace('/[^A-Za-z0-9\-]/', '', $reference);
-$reference = substr($reference, 0, 12);
-if (!$reference) {
-    $reference = 'Order-' . strtoupper(substr(md5(uniqid()), 0, 6));
-}
-
 // ------------------------------------------------------------------
-// LOAD ACTIVE PROVIDER
+// LOAD ACTIVE PROVIDER (needed to know flow before phone validation)
 // ------------------------------------------------------------------
 $provider     = defined('PAYMENT_PROVIDER') ? PAYMENT_PROVIDER : 'tinypesa';
 $providerFile = __DIR__ . '/providers/' . preg_replace('/[^a-z]/', '', $provider) . '.php';
@@ -90,9 +75,38 @@ if (!file_exists($providerFile)) {
 }
 
 require_once $providerFile;
+$providerFlow = provider_flow();
 
 // ------------------------------------------------------------------
-// INITIATE PAYMENT
+// PHONE NORMALISATION + VALIDATION
+// For STK-push providers: strict Kenyan format required (07XX/01XX)
+// For redirect providers: basic non-empty check only (entered on payment page)
+// ------------------------------------------------------------------
+if ($providerFlow === 'stk') {
+    $phone = preg_replace('/^(\+254|254|0)/', '', $phone);
+    if (!preg_match('/^(7|1)\d{8}$/', $phone)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid phone number. Use 07XX or 01XX format.']);
+        exit();
+    }
+    $phone = '254' . $phone;
+} else {
+    // Redirect providers — normalise common Kenyan prefixes if present; pass through others
+    $normalised = preg_replace('/^(\+254|254|0)(?=(7|1)\d{8}$)/', '', $phone);
+    if (preg_match('/^(7|1)\d{8}$/', $normalised)) {
+        $phone = '254' . $normalised;
+    }
+    // Otherwise keep phone as-is (international format for non-KE providers)
+}
+
+// Sanitise reference (alphanumeric + hyphens, max 12 chars)
+$reference = preg_replace('/[^A-Za-z0-9\-]/', '', $reference);
+$reference = substr($reference, 0, 12);
+if (!$reference) {
+    $reference = 'Order-' . strtoupper(substr(md5(uniqid()), 0, 6));
+}
+
+// ------------------------------------------------------------------
+// INITIATE PAYMENT  (provider already loaded above)
 // ------------------------------------------------------------------
 $result = provider_initiate($phone, (float)$amount, $reference);
 echo json_encode($result);
