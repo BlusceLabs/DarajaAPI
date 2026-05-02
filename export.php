@@ -1,5 +1,6 @@
 <?php
 // export.php — Downloads transactions as a UTF-8 CSV file
+require_once __DIR__ . '/auth_guard.php';
 // Optional query params: ?from=YYYY-MM-DD&to=YYYY-MM-DD
 
 $logFile = __DIR__ . '/mpesa_log.json';

@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/auth_guard.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -463,6 +464,7 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
         <a href="/health.php" class="back-link">Health</a>
         <a href="/webhook_test.php" class="back-link">Simulator</a>
         <a href="/" class="back-link">&#8592; Payment Page</a>
+        <a href="/logout.php" class="back-link" style="color:#c0392b;border-color:#f5c0c0;" title="Sign out of admin panel">Sign Out</a>
     </div>
 </div>
 

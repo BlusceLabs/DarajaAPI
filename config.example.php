@@ -20,6 +20,16 @@ define('TINYPESA_API_KEY', 'YOUR_TINYPESA_API_KEY_HERE');
 define('TINYPESA_URL',     'https://tinypesa.com/api/v1/express/initialize');
 
 // ------------------------------------------------------------------
+// ADMIN PANEL CREDENTIALS
+// Username for the admin login page.
+// Generate the password hash in your terminal:
+//   php -r "echo password_hash('your_password', PASSWORD_BCRYPT) . PHP_EOL;"
+// Then paste the output as ADMIN_PASSWORD_HASH below.
+// ------------------------------------------------------------------
+define('ADMIN_USERNAME',      'admin');
+define('ADMIN_PASSWORD_HASH', 'YOUR_ADMIN_PASSWORD_HASH_HERE');
+
+// ------------------------------------------------------------------
 // SAFARICOM DARAJA  (STK Push — requires PAYMENT_PROVIDER = 'daraja')
 // Create an app at: https://developer.safaricom.co.ke
 // Set DARAJA_CALLBACK_URL to your public HTTPS callback URL.

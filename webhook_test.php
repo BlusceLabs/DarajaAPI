@@ -8,6 +8,7 @@
  *  - Flutterwave        → POST to callback_flutterwave.php (via server-side proxy
  *                         so FLW_SECRET_HASH is never sent to the browser)
  */
+require_once __DIR__ . '/auth_guard.php';
 
 // ── Server-side action: proxy Flutterwave webhook ─────────────────────────────
 if (isset($_GET['action']) && $_GET['action'] === 'flw_sim') {
