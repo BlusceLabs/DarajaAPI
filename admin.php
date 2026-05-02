@@ -183,6 +183,25 @@
         .chart-lbl { font-size: 9px; fill: var(--chart-label); text-anchor: middle; font-family: -apple-system, sans-serif; }
         .chart-amt { font-size: 8.5px; fill: var(--stat-value); text-anchor: middle; font-family: -apple-system, sans-serif; font-weight: 700; }
 
+        /* Provider filter */
+        .provider-filter {
+            max-width: 960px; margin: 0 auto 16px;
+            background: var(--surface); border-radius: 14px;
+            box-shadow: 0 2px 10px var(--shadow);
+            padding: 14px 18px;
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .provider-filter label { font-size: 12px; font-weight: 700; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; margin-right: 4px; }
+        .provider-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .provider-tab {
+            padding: 4px 13px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            cursor: pointer; border: 1.5px solid var(--filter-border);
+            background: var(--surface); color: var(--filter-text);
+            transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+        }
+        .provider-tab.active, .provider-tab:hover { background: #006633; color: #fff; border-color: #006633; }
+        .provider-tab img { height: 14px; width: auto; border-radius: 2px; vertical-align: middle; }
+
         /* Date filter */
         .date-filter {
             max-width: 960px; margin: 0 auto 16px;
@@ -389,6 +408,17 @@ $pending     = $total - $confirmed - $failed;
 $successRate = $total > 0 ? round(($confirmed / $total) * 100) : 0;
 $lastUpdated = date('H:i:s');
 
+// Unique providers present in the log
+$providerNameMap = ['tinypesa' => 'TinyPesa', 'daraja' => 'Daraja', 'pesapal' => 'PesaPal', 'flutterwave' => 'Flutterwave', 'paystack' => 'Paystack', 'mtnmomo' => 'MTN MoMo', 'airtelmoney' => 'Airtel Money', 'dpopay' => 'DPO Pay', 'ozow' => 'Ozow', 'cinetpay' => 'CinetPay', 'paymob' => 'Paymob', 'ecocash' => 'Ecocash', 'orangemoney' => 'Orange Money', 'cellulant' => 'Cellulant Tingg', 'evcplus' => 'EVC Plus', 'wave' => 'Wave', 'telebirr' => 'Telebirr', 'moovafrica' => 'Moov Africa'];
+$uniqueProviders = [];
+foreach ($entries as $e) {
+    $pv = $e['provider'] ?? 'tinypesa';
+    if (!isset($uniqueProviders[$pv])) {
+        $uniqueProviders[$pv] = $providerNameMap[$pv] ?? ucfirst($pv);
+    }
+}
+ksort($uniqueProviders);
+
 // 7-day chart
 $chartDays = [];
 for ($i = 6; $i >= 0; $i--) {
@@ -439,22 +469,22 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
 <div class="stats">
     <div class="stat-card">
         <div class="label">Total Requests</div>
-        <div class="value neutral"><?= $total ?></div>
-        <div class="sub">All time</div>
+        <div class="value neutral" id="statTotal"><?= $total ?></div>
+        <div class="sub" id="statTotalSub">All time</div>
     </div>
     <div class="stat-card">
         <div class="label">Confirmed</div>
-        <div class="value"><?= $confirmed ?></div>
-        <div class="sub"><?= $successRate ?>% success rate</div>
+        <div class="value" id="statConfirmed"><?= $confirmed ?></div>
+        <div class="sub" id="statConfirmedSub"><?= $successRate ?>% success rate</div>
     </div>
     <div class="stat-card">
         <div class="label">Failed / Cancelled</div>
-        <div class="value red"><?= $failed ?></div>
-        <div class="sub"><?= $pending ?> pending</div>
+        <div class="value red" id="statFailed"><?= $failed ?></div>
+        <div class="sub" id="statFailedSub"><?= $pending ?> pending</div>
     </div>
     <div class="stat-card">
         <div class="label">Total Collected</div>
-        <div class="value">KES <?= number_format($totalAmt, 2) ?></div>
+        <div class="value" id="statCollected">KES <?= number_format($totalAmt, 2) ?></div>
         <div class="sub">Confirmed payments only</div>
     </div>
 </div>
@@ -488,6 +518,25 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
         </svg>
     </div>
 </div>
+
+<?php if (!empty($uniqueProviders)): ?>
+<div class="provider-filter">
+    <label>Provider</label>
+    <div class="provider-tabs">
+        <button class="provider-tab active" onclick="applyProviderFilter('all', this)">All</button>
+        <?php
+        $providerLogosMap = ['tinypesa' => '/logos/tinypesa.png', 'daraja' => '/logos/daraja.svg', 'pesapal' => '/logos/pesapal.png', 'flutterwave' => '/logos/flutterwave_32.png', 'paystack' => '/logos/paystack.png', 'mtnmomo' => '/logos/mtnmomo.svg', 'airtelmoney' => '/logos/airtelmoney.png', 'dpopay' => '/logos/dpopay.png', 'ozow' => '/logos/ozow.png', 'cinetpay' => '/logos/cinetpay.svg', 'paymob' => '/logos/paymob.svg', 'ecocash' => '/logos/ecocash.svg', 'orangemoney' => '/logos/orangemoney.svg', 'cellulant' => '/logos/cellulant.svg', 'evcplus' => '/logos/evcplus.svg', 'wave' => '/logos/wave.svg', 'telebirr' => '/logos/telebirr.svg', 'moovafrica' => '/logos/moovafrica.svg'];
+        foreach ($uniqueProviders as $pvKey => $pvLabel):
+            $pvLogo = $providerLogosMap[$pvKey] ?? null;
+        ?>
+        <button class="provider-tab" onclick="applyProviderFilter('<?= htmlspecialchars($pvKey) ?>', this)">
+            <?php if ($pvLogo): ?><img src="<?= htmlspecialchars($pvLogo) ?>" alt=""><?php endif; ?>
+            <?= htmlspecialchars($pvLabel) ?>
+        </button>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="date-filter">
     <label>Date Range</label>
@@ -643,12 +692,13 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
     if (autoRefresh) startCountdown();
 
     // ---- State ----
-    const PAGE_SIZE   = 20;
-    let currentFilter = 'all';
-    let currentPage   = 1;
-    let visibleRows   = [];
-    let sortCol       = null;   // 'num'|'date'|'provider'|'phone'|'amount'|'receipt'|'status'
-    let sortDir       = 'asc';  // 'asc'|'desc'
+    const PAGE_SIZE     = 20;
+    let currentFilter   = 'all';
+    let currentProvider = 'all';
+    let currentPage     = 1;
+    let visibleRows     = [];
+    let sortCol         = null;   // 'num'|'date'|'provider'|'phone'|'amount'|'receipt'|'status'
+    let sortDir         = 'asc';  // 'asc'|'desc'
 
     // ---- Sort ----
     function setSort(col) {
@@ -692,6 +742,13 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
         onFilterChange();
     }
 
+    function applyProviderFilter(provider, btn) {
+        currentProvider = provider;
+        document.querySelectorAll('.provider-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        onFilterChange();
+    }
+
     function onFilterChange() {
         updateExportLink();
         applySearch();
@@ -704,12 +761,13 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
 
         visibleRows = [];
         document.querySelectorAll('#txTable tbody tr').forEach(row => {
-            const matchFilter = currentFilter === 'all' || row.dataset.status === currentFilter;
-            const matchSearch = !q || row.dataset.search.includes(q);
-            const rowDate     = row.dataset.date || '';
-            const matchFrom   = !dateFrom || rowDate >= dateFrom;
-            const matchTo     = !dateTo   || rowDate <= dateTo;
-            if (matchFilter && matchSearch && matchFrom && matchTo) visibleRows.push(row);
+            const matchFilter   = currentFilter === 'all' || row.dataset.status === currentFilter;
+            const matchProvider = currentProvider === 'all' || row.dataset.sortprovider === currentProvider;
+            const matchSearch   = !q || row.dataset.search.includes(q);
+            const rowDate       = row.dataset.date || '';
+            const matchFrom     = !dateFrom || rowDate >= dateFrom;
+            const matchTo       = !dateTo   || rowDate <= dateTo;
+            if (matchFilter && matchProvider && matchSearch && matchFrom && matchTo) visibleRows.push(row);
             row.style.display = 'none';
         });
 
@@ -718,6 +776,45 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
         renderPage();
         renderPagination();
         updateFilterSummary(visibleRows.length);
+        updateStats();
+    }
+
+    // ---- Stats update ----
+    function updateStats() {
+        let total = 0, confirmed = 0, failed = 0, totalAmt = 0;
+        visibleRows.forEach(row => {
+            total++;
+            const status = row.dataset.status;
+            if (status === 'success') {
+                confirmed++;
+                totalAmt += parseFloat(row.dataset.sortamount) || 0;
+            } else if (status === 'failed') {
+                failed++;
+            }
+        });
+        const pending     = total - confirmed - failed;
+        const successRate = total > 0 ? Math.round((confirmed / total) * 100) : 0;
+
+        const elTotal     = document.getElementById('statTotal');
+        const elConf      = document.getElementById('statConfirmed');
+        const elConfSub   = document.getElementById('statConfirmedSub');
+        const elFailed    = document.getElementById('statFailed');
+        const elFailedSub = document.getElementById('statFailedSub');
+        const elCollected = document.getElementById('statCollected');
+        const allRowsCount = document.querySelectorAll('#txTable tbody tr').length;
+        const isFiltered   = currentProvider !== 'all' || currentFilter !== 'all'
+                           || document.getElementById('dateFrom').value
+                           || document.getElementById('dateTo').value
+                           || document.getElementById('searchInput').value.trim();
+
+        const elTotalSub = document.getElementById('statTotalSub');
+        if (elTotal)     elTotal.textContent    = total;
+        if (elTotalSub)  elTotalSub.textContent = isFiltered ? 'Filtered view' : 'All time';
+        if (elConf)      elConf.textContent      = confirmed;
+        if (elConfSub)   elConfSub.textContent   = successRate + '% success rate';
+        if (elFailed)    elFailed.textContent    = failed;
+        if (elFailedSub) elFailedSub.textContent = pending + ' pending';
+        if (elCollected) elCollected.textContent = 'KES ' + totalAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
     }
 
     // ---- Pagination ----
