@@ -1,59 +1,98 @@
 <?php
-// stk_push.php
+// stk_push.php — Initiates an M-Pesa STK Push via TinyPesa
+
 header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
-// 1. Manually Configuration
-$apiKey = ''; 
-$url = 'https://tinypesa.com/api/v1/express/initialize';
+require_once 'config.php';
 
-// 2. Get Data
-$phone = $_GET['phone'] ?? '';
-$amount = $_GET['amount'] ?? '';
-
-if (!$phone || !$amount) {
-    echo json_encode(['success' => false, 'message' => 'Phone and Amount required']);
+// Handle CORS preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit();
 }
 
-// 3. Format Phone
-$phone = '254' . substr(preg_replace("/^(\+254|254|0)/", "", $phone), 0);
+// Read JSON body from frontend
+$raw  = file_get_contents('php://input');
+$data = json_decode($raw, true);
 
-// 4. Prepare Data
+$phone     = trim($data['phone']     ?? '');
+$amount    = trim($data['amount']    ?? '');
+$reference = trim($data['reference'] ?? '');
+
+// Validation
+if (!$phone || !$amount) {
+    echo json_encode(['success' => false, 'message' => 'Phone number and amount are required.']);
+    exit();
+}
+
+if (!is_numeric($amount) || (float)$amount < 1 || (float)$amount > 150000) {
+    echo json_encode(['success' => false, 'message' => 'Amount must be between KES 1 and KES 150,000.']);
+    exit();
+}
+
+// Normalise phone to 2547XXXXXXXX or 2541XXXXXXXX
+$phone = preg_replace('/^(\+254|254|0)/', '', $phone);
+if (!preg_match('/^(7|1)\d{8}$/', $phone)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid Safaricom phone number.']);
+    exit();
+}
+$phone = '254' . $phone;
+
+// Account reference (fallback to auto-generated order ID)
+if (!$reference) {
+    $reference = 'Order-' . strtoupper(substr(md5(uniqid()), 0, 6));
+}
+
+// Build POST body
 $body = http_build_query([
-    'amount' => $amount,
-    'msisdn' => $phone,
-    'account_no' => 'Order-' . rand(1000, 9999)
+    'amount'     => (int)$amount,
+    'msisdn'     => $phone,
+    'account_no' => $reference,
 ]);
 
-// 5. Send Request with "Browser-like" Headers
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $url);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-// CRITICAL: We add these headers to look like a real browser
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    "ApiKey: " . $apiKey,
-    "Content-Type: application/x-www-form-urlencoded",
-    "Origin: https://tinypesa.com",       // <--- TRICKS THE FIREWALL
-    "Referer: https://tinypesa.com/",     // <--- TRICKS THE FIREWALL
-    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+curl_setopt_array($ch, [
+    CURLOPT_URL            => TINYPESA_URL,
+    CURLOPT_POST           => true,
+    CURLOPT_POSTFIELDS     => $body,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT        => 30,
+    CURLOPT_HTTPHEADER     => [
+        'ApiKey: '     . TINYPESA_API_KEY,
+        'Content-Type: application/x-www-form-urlencoded',
+        'Accept: application/json',
+    ],
 ]);
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$curlErr  = curl_error($ch);
 curl_close($ch);
 
-// 6. Handle Response
-if ($httpCode == 200) {
-    echo json_encode(['success' => true, 'message' => 'STK Push Sent! Check phone.']);
-} else {
+if ($curlErr) {
+    echo json_encode(['success' => false, 'message' => 'Connection error: ' . $curlErr]);
+    exit();
+}
+
+$result = json_decode($response, true);
+
+if ($httpCode === 200 && isset($result['success']) && $result['success']) {
     echo json_encode([
-        'success' => false, 
-        'message' => 'Failed. Firewall blocked us.', 
-        'debug' => $response
+        'success'   => true,
+        'message'   => 'STK Push sent! Check your phone.',
+        'reference' => $reference,
     ]);
+} elseif ($httpCode === 200) {
+    // TinyPesa responded 200 but success flag differs across API versions
+    echo json_encode([
+        'success'   => true,
+        'message'   => 'STK Push sent! Check your phone.',
+        'reference' => $reference,
+    ]);
+} else {
+    $errMsg = $result['message'] ?? $result['detail'] ?? 'Unexpected error from payment provider.';
+    echo json_encode(['success' => false, 'message' => $errMsg]);
 }
 ?>

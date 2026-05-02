@@ -1,14 +1,11 @@
 <?php
 // config.php
-header("Access-Control-Allow-Origin: *");
+// Copy config.example.php to this file and fill in your credentials.
+// This file is gitignored — never commit it.
 
 // ------------------------------------------------------------------
 // TINYPESA CONFIGURATION
+// Get your API key from: https://tinypesa.com/dashboard
 // ------------------------------------------------------------------
-
-// Paste your TinyPesa API Key here (from your Dashboard)
-define('TINYPESA_API_KEY', 'qfDwAHBhP1s51gKdxIKFi-ZjXFoYpqwJMZPOZE-EDNoaIb7MvQ'); 
-
-// The TinyPesa Endpoint
-define('TINYPESA_URL', 'https://tinypesa.com/api/v1/express/initialize');
-?>
+define('TINYPESA_API_KEY', 'YOUR_TINYPESA_API_KEY_HERE');
+define('TINYPESA_URL',     'https://tinypesa.com/api/v1/express/initialize');

@@ -1,26 +1,25 @@
-# 🟢 M-Pesa STK Push — PHP Integration
+# M-Pesa STK Push — PHP Integration
 
-A clean, ready-to-use PHP implementation of the **Safaricom Daraja API** (STK Push / Lipa Na M-Pesa Online). Drop it into any PHP project to accept M-Pesa payments instantly.
+A clean, ready-to-use PHP integration for **Lipa Na M-Pesa Online** (STK Push) using the [TinyPesa](https://tinypesa.com) API. No complex OAuth flows — just a simple API key and you're ready to accept M-Pesa payments.
 
 ---
 
 ## Features
 
-- ✅ STK Push (prompt customer's phone for PIN)
-- ✅ Automatic access token generation
-- ✅ Supports Paybill and Till Number (Buy Goods)
-- ✅ Callback handler that logs all payment results
-- ✅ Payment status polling endpoint
-- ✅ Polished payment UI (no framework dependencies)
-- ✅ Sandbox & Production environments
+- STK Push — prompts the customer's phone for their M-Pesa PIN
+- Quick-amount buttons and optional account reference on the payment form
+- Callback handler that parses and logs all payment results as structured JSON
+- Payment status polling — auto-detects confirmation in the browser
+- Transaction log admin page with summary stats and status filtering
+- Phone number validation (rejects non-Safaricom numbers before calling the API)
+- No framework dependencies — plain PHP + vanilla JS
 
 ---
 
 ## Requirements
 
-- PHP 7.4 or higher
-- `curl` PHP extension enabled
-- A [Safaricom Daraja](https://developer.safaricom.co.ke/) account
+- PHP 7.4 or higher with the `curl` extension enabled
+- A [TinyPesa](https://tinypesa.com) account and API key
 
 ---
 
@@ -35,24 +34,30 @@ cd mpesa-stk-push-php
 
 ### 2. Configure your credentials
 
-Copy the example config and fill in your details:
-
 ```bash
 cp config.example.php config.php
 ```
 
-Then edit `config.php`:
+Edit `config.php`:
 
 ```php
-define('CONSUMER_KEY',    'your_consumer_key');
-define('CONSUMER_SECRET', 'your_consumer_secret');
-define('BUSINESS_SHORTCODE', '174379');          // Sandbox default
-define('PASSKEY', 'your_passkey');
-define('ENV', 'sandbox');                        // or 'production'
-define('CALLBACK_URL', 'https://yourdomain.com/callback.php');
+define('TINYPESA_API_KEY', 'your_tinypesa_api_key_here');
+define('TINYPESA_URL',     'https://tinypesa.com/api/v1/express/initialize');
 ```
 
-### 3. Run the server
+Get your API key from the [TinyPesa Dashboard](https://tinypesa.com/dashboard).
+
+### 3. Set your callback URL
+
+In your TinyPesa dashboard, set the callback URL to:
+
+```
+https://yourdomain.com/callback.php
+```
+
+> Safaricom requires a publicly accessible HTTPS URL. The callback cannot point to localhost.
+
+### 4. Run the server
 
 ```bash
 php -S 0.0.0.0:8000
@@ -65,13 +70,19 @@ Open `http://localhost:8000` in your browser.
 ## File Structure
 
 ```
-├── index.php           # Payment UI (frontend)
-├── stk_push.php        # STK Push API endpoint
-├── callback.php        # M-Pesa payment result receiver
-├── check_status.php    # Payment status polling endpoint
-├── config.php          # Your credentials (not committed)
-├── config.example.php  # Template — copy to config.php
-└── mpesa_log.json      # Auto-created — transaction log
+├── index.php            # Payment UI — phone, amount, quick-select chips, reference
+├── stk_push.php         # POST endpoint — validates input, calls TinyPesa API
+├── callback.php         # Receives M-Pesa results from TinyPesa / Safaricom
+├── check_status.php     # GET endpoint — polls log for payment confirmation
+├── admin.php            # Transaction log viewer with stats and filtering
+├── config.php           # Your credentials (gitignored — never commit)
+├── config.example.php   # Safe template — copy to config.php
+├── favicon.svg          # Browser tab icon
+├── mpesa_log.json        # Auto-created — one JSON entry per callback
+├── README.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+└── LICENSE
 ```
 
 ---
@@ -80,46 +91,52 @@ Open `http://localhost:8000` in your browser.
 
 ### `POST /stk_push.php`
 
-Initiates an STK push to the customer's phone.
+Triggers an STK push to the customer's phone.
 
 **Request body (JSON):**
 ```json
 {
   "phone": "0712345678",
-  "amount": "100"
+  "amount": "500",
+  "reference": "Invoice-001"
 }
 ```
+`reference` is optional (max 12 characters). Defaults to an auto-generated order ID.
 
-**Success response:**
+**Success:**
 ```json
-{ "success": true, "message": "STK Push sent successfully! Check your phone." }
+{ "success": true, "message": "STK Push sent! Check your phone.", "reference": "Invoice-001" }
 ```
 
-**Error response:**
+**Error:**
 ```json
-{ "success": false, "message": "M-Pesa Error: ..." }
+{ "success": false, "message": "Invalid Safaricom phone number." }
 ```
 
 ---
 
 ### `POST /callback.php`
 
-Receives the payment result from Safaricom after the customer enters their PIN. Set this as your **Callback URL** in `config.php`.
+Receives the payment result from TinyPesa after the customer enters their PIN.
+All callbacks are appended to `mpesa_log.json` as JSON lines.
 
-All callbacks are appended to `mpesa_log.json`.
+**Responds with:**
+```json
+{ "ResultCode": 0, "ResultDesc": "Accepted" }
+```
 
 ---
 
 ### `GET /check_status.php?phone=0712345678`
 
-Polls the transaction log for a confirmed payment matching the given phone number.
+Polls `mpesa_log.json` for a confirmed payment matching the given phone number.
 
-**Confirmed response:**
+**Confirmed:**
 ```json
 {
   "success": true,
   "message": "Payment confirmed",
-  "amount": 100,
+  "amount": 500,
   "receipt": "QHX2Y3Z4AB",
   "timestamp": "20241210103045"
 }
@@ -132,42 +149,40 @@ Polls the transaction log for a confirmed payment matching the given phone numbe
 
 ---
 
-## Paybill vs Till Number
+### `GET /admin.php`
 
-Edit `config.php` to switch between payment types:
-
-| Type | `TRANSACTION_TYPE` | `PARTY_B` |
-|------|-------------------|-----------|
-| Paybill | `CustomerPayBillOnline` | Shortcode |
-| Till (Buy Goods) | `CustomerBuyGoodsOnline` | Till Number |
+Browser-based transaction log viewer. Shows:
+- Summary cards: total requests, confirmed, failed, total KES collected
+- A filterable table of all transactions with phone, amount, receipt, status, and result description
 
 ---
 
-## Going Live (Production)
+## Phone Number Formats Accepted
 
-1. Complete the **Go-Live** checklist on the [Daraja Portal](https://developer.safaricom.co.ke/).
-2. Set `ENV` to `'production'` in `config.php`.
-3. Update `CONSUMER_KEY`, `CONSUMER_SECRET`, `BUSINESS_SHORTCODE`, and `PASSKEY` with your production values.
-4. Update `CALLBACK_URL` to your live HTTPS URL.
-
-> **Important:** Your callback URL must be publicly accessible over HTTPS. Safaricom will not deliver callbacks to localhost.
+| Input | Normalised |
+|-------|-----------|
+| `0712345678` | `254712345678` |
+| `+254712345678` | `254712345678` |
+| `254712345678` | `254712345678` |
+| `0112345678` | `254112345678` |
 
 ---
 
 ## Security Notes
 
-- `config.php` is listed in `.gitignore` — never commit it.
-- `mpesa_log.json` is also excluded from version control.
-- In production, restrict direct access to `.php` backend files via your web server config (nginx/Apache).
+- `config.php` is in `.gitignore` — never commit it
+- `mpesa_log.json` is also excluded — it contains real phone numbers and amounts
+- In production, restrict browser access to `stk_push.php`, `callback.php`, and `check_status.php` via your web server (nginx/Apache) so only authorised clients can call them
+- `admin.php` has no authentication by default — add HTTP basic auth or a session check before deploying publicly
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a pull request.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE) for details.
