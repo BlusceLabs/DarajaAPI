@@ -166,5 +166,28 @@ function provider_parse_callback(array $raw): array {
 
 function provider_check_status(array $entry, string $phone): bool {
     $entryPhone = (string)($entry['PhoneNumber'] ?? '');
-    return $entryPhone === $phone && ($entry['ResultCode'] ?? null) === 0;
+    $resultCode = $entry['ResultCode'] ?? null;
+
+    // Primary: phone is already in the log entry — require match AND success
+    if ($entryPhone) {
+        return $entryPhone === $phone && $resultCode === 0;
+    }
+
+    // Fallback: phone not yet stored (edge case where parse_callback couldn't
+    // retrieve it). Do a live lookup but ALWAYS verify phone from the API
+    // response — never confirm based on tracking ID alone.
+    $trackingId = $entry['OrderTrackingId'] ?? null;
+    if ($trackingId) {
+        $status = pesapal_query_transaction_status($trackingId);
+        if ($status && ($status['payment_status_code'] ?? null) === '1') {
+            $statusPhone = $status['phone_number'] ?? '';
+            if ($statusPhone) {
+                $stripped    = preg_replace('/^\+?254|^0/', '', $statusPhone);
+                $normalized  = '254' . ltrim($stripped, '0');
+                return $normalized === $phone;
+            }
+        }
+    }
+
+    return false;
 }

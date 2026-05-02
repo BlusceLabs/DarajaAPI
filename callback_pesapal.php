@@ -65,3 +65,4 @@ file_put_contents($logFile, json_encode($entry) . PHP_EOL, FILE_APPEND | LOCK_EX
 
 http_response_code(200);
 echo json_encode(['OrderNotificationType' => 'IPNCHANGE', 'OrderTrackingId' => $orderTrackingId, 'OrderMerchantReference' => $merchantRef, 'status' => 200]);
+

@@ -583,6 +583,7 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             <td class="amount"><?= htmlspecialchars($amount) ?></td>
             <td class="receipt"><?= htmlspecialchars($receipt) ?></td>
             <td><span class="badge <?= $status ?>"><?= $icon ?> <?= $label ?></span></td>
+            <td><span class="badge pending" style="font-size:10px;text-transform:uppercase;letter-spacing:0.4px"><?= htmlspecialchars($provider) ?></span></td>
             <td style="color:var(--text-7);font-size:12px;max-width:200px"><?= htmlspecialchars($desc) ?></td>
         </tr>
         <?php endforeach; ?>

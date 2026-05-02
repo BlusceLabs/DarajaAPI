@@ -209,7 +209,6 @@ $providerLabels = [
     'telebirr'    => ['Telebirr',          'redirect', '🌐'],
     'moovafrica'  => ['Moov Africa/Flooz', 'stk',      '📱'],
 ];
-
 if ($configExists) {
     require_once __DIR__ . '/config.php';
     $activeProvider = defined('PAYMENT_PROVIDER') ? PAYMENT_PROVIDER : 'tinypesa';
@@ -485,6 +484,7 @@ addCheck($checks, 'HTTPS', $isHttps ? 'Connection is secure' : 'Not running over
 degradeOverall($overall, $httpStatus);
 
 $icons = ['ok' => '✅', 'warning' => '⚠️', 'error' => '❌'];
+$providerLabel = strtoupper($activeProvider ?? 'TINYPESA');
 $overallMsgs = [
     'ok'      => ['All Systems Operational', 'Your payment integration is ready to accept payments.'],
     'warning' => ['Attention Required',       'Some optional checks need review. Core functionality may still work.'],

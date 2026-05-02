@@ -1,6 +1,7 @@
 <?php
 // stk_push.php — Payment initiation router (provider-agnostic)
 
+
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
@@ -71,6 +72,7 @@ $providerFile = __DIR__ . '/providers/' . preg_replace('/[^a-z]/', '', $provider
 
 if (!file_exists($providerFile)) {
     echo json_encode(['success' => false, 'message' => 'Unsupported payment provider: ' . htmlspecialchars($provider)]);
+
     exit();
 }
 
@@ -110,3 +112,4 @@ if (!$reference) {
 // ------------------------------------------------------------------
 $result = provider_initiate($phone, (float)$amount, $reference);
 echo json_encode($result);
+

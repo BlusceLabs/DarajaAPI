@@ -12,9 +12,9 @@ if (!$raw) {
     exit();
 }
 
-$data = json_decode($raw, true);
-
 require_once __DIR__ . '/config.php';
+
+$data = json_decode($raw, true) ?? [];
 
 $provider     = defined('PAYMENT_PROVIDER') ? PAYMENT_PROVIDER : 'tinypesa';
 $providerFile = __DIR__ . '/providers/' . preg_replace('/[^a-z]/', '', $provider) . '.php';

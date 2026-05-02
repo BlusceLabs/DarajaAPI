@@ -108,6 +108,8 @@ All callbacks use a defence-in-depth approach:
 - Rate limit: 5 requests per IP per minute (file-based via `sys_get_temp_dir()`)
 - Reference field max length: 20 characters
 - STK polling: 5s interval × 12 attempts = 60s total; cancel button available
+- Phone validation: strips prefix, requires `(7|1)\d{8}` pattern (Safaricom only)
+- Amount range: KES 1 – 150,000
 
 ## User Preferences
 - Open source — code must remain clean, documented, and framework-free

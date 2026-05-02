@@ -53,6 +53,7 @@ fwrite($out, "\xEF\xBB\xBF");
 // Header row
 fputcsv($out, ['#', 'Date / Time', 'Provider', 'Phone', 'Amount (KES)', 'Receipt', 'Status', 'Result Code', 'Result Description', 'Reference']);
 
+
 $total = count($entries);
 foreach (array_reverse($entries) as $i => $e) {
     $rc       = $e['ResultCode'] ?? null;
@@ -66,6 +67,7 @@ foreach (array_reverse($entries) as $i => $e) {
     $provider = $e['provider'] ?? 'tinypesa';
 
     fputcsv($out, [$total - $i, $date, $provider, $phone, $amount, $receipt, $status, $rc ?? '', $desc, $ref]);
+
 }
 
 fclose($out);

@@ -1,6 +1,6 @@
-# M-Pesa STK Push — PHP Integration
+# M-Pesa Payments — PHP Integration
 
-A clean, production-ready PHP integration for **Lipa Na M-Pesa Online** (STK Push) using the [TinyPesa](https://tinypesa.com) API. No complex OAuth flows — just an API key and you're ready to accept M-Pesa payments.
+A clean, production-ready PHP integration for M-Pesa and other East African payment gateways. Supports four providers out of the box — switch between them with a single constant in `config.php`.
 
 No frameworks. No build tools. Plain PHP + vanilla JS.
 
@@ -142,22 +142,27 @@ cd DarajaAPI
 cp config.example.php config.php
 ```
 
-Edit `config.php`:
+Edit `config.php` — set `PAYMENT_PROVIDER` and uncomment the matching section:
 
 ```php
+// Choose one: 'tinypesa' | 'daraja' | 'pesapal' | 'flutterwave'
+define('PAYMENT_PROVIDER', 'tinypesa');
+
+// TinyPesa — get your key from https://tinypesa.com/dashboard
 define('TINYPESA_API_KEY', 'your_tinypesa_api_key_here');
 define('TINYPESA_URL',     'https://tinypesa.com/api/v1/express/initialize');
 ```
 
-Get your API key from the [TinyPesa Dashboard](https://tinypesa.com/dashboard).
-
 ### 3. Set your callback URL
 
-In your TinyPesa dashboard, set the callback URL to:
+Set the callback URL in your provider's dashboard:
 
-```
-https://yourdomain.com/callback.php
-```
+| Provider | Dashboard Callback URL |
+|---|---|
+| TinyPesa | `https://yourdomain.com/callback.php` |
+| Daraja | `DARAJA_CALLBACK_URL` constant in config.php |
+| PesaPal | `PESAPAL_IPN_URL` → `https://yourdomain.com/callback_pesapal.php` |
+| Flutterwave | `FLW_RETURN_URL` (browser return page) + set `https://yourdomain.com/callback_flutterwave.php` as Webhook URL in Flutterwave dashboard |
 
 > Safaricom requires a publicly accessible HTTPS URL. The callback cannot point to `localhost`.  
 > For local development, expose your server with [ngrok](https://ngrok.com): `ngrok http 8000`

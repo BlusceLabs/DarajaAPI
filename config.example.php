@@ -14,6 +14,7 @@ define('PAYMENT_PROVIDER', 'tinypesa');
 // ------------------------------------------------------------------
 // TINYPESA  (STK Push — requires PAYMENT_PROVIDER = 'tinypesa')
 // Get your API key from: https://tinypesa.com/dashboard
+// Flow type: STK Push (user enters PIN on their phone)
 // ------------------------------------------------------------------
 define('TINYPESA_API_KEY', 'YOUR_TINYPESA_API_KEY_HERE');
 define('TINYPESA_URL',     'https://tinypesa.com/api/v1/express/initialize');
