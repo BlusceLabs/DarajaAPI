@@ -159,7 +159,7 @@ function provider_parse_callback(array $raw): array {
         'MpesaReceiptNumber' => $transaction['airtel_money_id'] ?? ($transaction['id'] ?? ''),
         'TransactionDate'    => date('Y-m-d H:i:s'),
         'Reference'          => $transaction['id'] ?? '',
-        'Currency'           => $transaction['currency'] ?? '',
+        'currency'           => $transaction['currency'] ?: (defined('AIRTEL_CURRENCY') ? AIRTEL_CURRENCY : 'KES'),
         'AirtelTxId'         => $transaction['airtel_money_id'] ?? '',
     ];
 }

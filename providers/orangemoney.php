@@ -129,7 +129,7 @@ function provider_parse_callback(array $raw): array {
         'MpesaReceiptNumber' => $transId,
         'TransactionDate'    => date('Y-m-d H:i:s'),
         'Reference'          => $ref,
-        'Currency'           => $raw['currency'] ?? '',
+        'currency'           => $raw['currency'] ?: (defined('ORANGE_CURRENCY') ? ORANGE_CURRENCY : 'XOF'),
         'Country'            => strtoupper(defined('ORANGE_COUNTRY') ? ORANGE_COUNTRY : ''),
     ];
 }

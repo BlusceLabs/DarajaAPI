@@ -57,6 +57,7 @@ foreach (array_reverse($lines) as $line) {
             'success'   => true,
             'message'   => 'Payment confirmed',
             'amount'    => $entry['Amount']             ?? null,
+            'currency'  => $entry['currency']           ?? 'KES',
             'receipt'   => $entry['MpesaReceiptNumber'] ?? null,
             'timestamp' => $entry['TransactionDate']    ?? $entry['timestamp'] ?? null,
         ]);

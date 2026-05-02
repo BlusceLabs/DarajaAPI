@@ -102,7 +102,7 @@ function provider_parse_callback(array $raw): array {
         'MpesaReceiptNumber' => $transId,
         'TransactionDate'    => $raw['cpm_paydate'] ?? date('Y-m-d H:i:s'),
         'Reference'          => $ref,
-        'Currency'           => $raw['cpm_currency'] ?? $raw['currency'] ?? '',
+        'currency'           => $raw['cpm_currency'] ?? $raw['currency'] ?? (defined('CINETPAY_CURRENCY') ? CINETPAY_CURRENCY : 'XOF'),
         'Country'            => $raw['cpm_site_id'] ?? '',
     ];
 }

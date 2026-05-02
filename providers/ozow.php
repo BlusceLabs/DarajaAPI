@@ -118,6 +118,7 @@ function provider_parse_callback(array $raw): array {
         'ResultDesc'         => $resultCode === 0 ? 'Payment successful' : ('Payment ' . ucfirst($status ?: 'failed')),
         'PhoneNumber'        => $phone,
         'Amount'             => $amount,
+        'currency'           => 'ZAR',
         'MpesaReceiptNumber' => $raw['TransactionId'] ?? '',
         'TransactionDate'    => date('Y-m-d H:i:s'),
         'Reference'          => $raw['TransactionReference'] ?? '',

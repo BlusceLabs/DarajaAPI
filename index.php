@@ -1031,7 +1031,7 @@ $jsAmountMax      = $amountMax;
                     let receiptHtml = '';
                     if (data.receipt || data.amount) {
                         receiptHtml = '<dl class="receipt-grid">';
-                        if (data.amount)    receiptHtml += '<dt>Amount</dt><dd>' + CURRENCY_SYM + ' ' + Number(data.amount).toLocaleString() + '</dd>';
+                        if (data.amount)    receiptHtml += '<dt>Amount</dt><dd>' + (data.currency || CURRENCY_SYM) + ' ' + Number(data.amount).toLocaleString() + '</dd>';
                         if (data.receipt)   receiptHtml += '<dt>Receipt</dt><dd>' + escHtml(data.receipt) + '<button class="copy-btn" onclick="copyReceipt(\'' + escHtml(data.receipt) + '\', this)" title="Copy receipt">Copy</button></dd>';
                         if (data.timestamp) receiptHtml += '<dt>Date</dt><dd>' + escHtml(String(data.timestamp)) + '</dd>';
                         receiptHtml += '</dl>';

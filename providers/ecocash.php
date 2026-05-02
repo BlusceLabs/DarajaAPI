@@ -108,7 +108,7 @@ function provider_parse_callback(array $raw): array {
         'MpesaReceiptNumber' => $transId,
         'TransactionDate'    => date('Y-m-d H:i:s'),
         'Reference'          => $ref,
-        'Currency'           => $raw['paymentAmount']['currency'] ?? 'USD',
+        'currency'           => $raw['paymentAmount']['currency'] ?? (defined('ECOCASH_CURRENCY') ? ECOCASH_CURRENCY : 'USD'),
     ];
 }
 

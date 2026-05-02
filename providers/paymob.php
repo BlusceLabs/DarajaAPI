@@ -123,7 +123,7 @@ function provider_parse_callback(array $raw): array {
         'MpesaReceiptNumber' => $transId,
         'TransactionDate'    => date('Y-m-d H:i:s', strtotime($obj['created_at'] ?? 'now')),
         'Reference'          => (string)$orderRef,
-        'Currency'           => $obj['currency'] ?? '',
+        'currency'           => $obj['currency'] ?: (defined('PAYMOB_CURRENCY') ? PAYMOB_CURRENCY : 'EGP'),
         'Channel'            => $obj['source_data']['type'] ?? '',
     ];
 }

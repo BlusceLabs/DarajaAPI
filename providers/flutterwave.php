@@ -101,6 +101,7 @@ function provider_parse_callback(array $raw): array {
         'ResultDesc'         => $resultCode === 0 ? 'Payment successful' : 'Payment ' . ($data['status'] ?? 'failed'),
         'PhoneNumber'        => $phone,
         'Amount'             => $amount,
+        'currency'           => $data['currency'] ?? (defined('FLW_CURRENCY') ? FLW_CURRENCY : 'KES'),
         'MpesaReceiptNumber' => $data['flw_ref'] ?? ($data['id'] ?? ''),
         'TransactionDate'    => $ts,
         'Reference'          => $data['tx_ref'] ?? '',

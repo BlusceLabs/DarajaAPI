@@ -134,7 +134,7 @@ function provider_parse_callback(array $raw): array {
         'MpesaReceiptNumber' => $txId,
         'TransactionDate'    => date('Y-m-d H:i:s'),
         'Reference'          => $ref,
-        'Currency'           => $raw['currencyCode'] ?? '',
+        'currency'           => $raw['currencyCode'] ?: (defined('CELLULANT_CURRENCY') ? CELLULANT_CURRENCY : 'KES'),
         'Country'            => $raw['countryCode'] ?? '',
     ];
 }

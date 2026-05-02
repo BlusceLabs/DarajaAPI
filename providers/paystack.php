@@ -115,7 +115,7 @@ function provider_parse_callback(array $raw): array {
         'TransactionDate'    => $ts,
         'Reference'          => $data['reference'] ?? '',
         'Channel'            => $data['channel'] ?? '',
-        'Currency'           => $data['currency'] ?? '',
+        'currency'           => $data['currency'] ?: (defined('PAYSTACK_CURRENCY') ? PAYSTACK_CURRENCY : 'KES'),
     ];
 }
 

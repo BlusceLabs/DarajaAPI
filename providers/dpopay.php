@@ -117,6 +117,7 @@ function provider_parse_callback(array $raw): array {
         'ResultDesc'         => $resultCode === 0 ? 'Payment successful' : ((string)($raw['ResultExplanation'] ?? 'Payment failed')),
         'PhoneNumber'        => $phone,
         'Amount'             => $amount,
+        'currency'           => defined('DPO_CURRENCY') ? DPO_CURRENCY : 'KES',
         'MpesaReceiptNumber' => $raw['TransactionRef'] ?? ($raw['TransToken'] ?? ''),
         'TransactionDate'    => $raw['TransactionDate'] ?? date('Y-m-d H:i:s'),
         'Reference'          => $raw['CompanyRef'] ?? '',

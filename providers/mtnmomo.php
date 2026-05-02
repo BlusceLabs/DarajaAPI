@@ -149,7 +149,7 @@ function provider_parse_callback(array $raw): array {
         'MpesaReceiptNumber' => $raw['financialTransactionId'] ?? ($raw['externalId'] ?? ''),
         'TransactionDate'    => date('Y-m-d H:i:s'),
         'Reference'          => $raw['externalId'] ?? '',
-        'Currency'           => $raw['currency'] ?? '',
+        'currency'           => $raw['currency'] ?: (defined('MTNMOMO_CURRENCY') ? MTNMOMO_CURRENCY : 'UGX'),
         'MoMoReason'         => $raw['reason'] ?? '',
     ];
 }

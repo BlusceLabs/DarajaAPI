@@ -138,6 +138,8 @@ function provider_parse_callback(array $raw): array {
         'provider'  => 'daraja',
     ];
 
+    $entry['currency'] = 'KES';
+
     if (isset($raw['Body']['stkCallback'])) {
         $cb = $raw['Body']['stkCallback'];
         $entry['MerchantRequestID'] = $cb['MerchantRequestID'] ?? null;

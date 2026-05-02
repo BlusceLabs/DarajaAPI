@@ -398,12 +398,19 @@ $total     = count($entries);
 $confirmed = 0;
 $failed    = 0;
 $totalAmt  = 0;
+$confirmedCurrencies = [];
 
 foreach ($entries as $e) {
     $rc = $e['ResultCode'] ?? null;
-    if ($rc === 0)               { $confirmed++; $totalAmt += (float)($e['Amount'] ?? 0); }
+    if ($rc === 0) {
+        $confirmed++;
+        $totalAmt += (float)($e['Amount'] ?? 0);
+        $cur = $e['currency'] ?? 'KES';
+        $confirmedCurrencies[$cur] = ($confirmedCurrencies[$cur] ?? 0) + (float)($e['Amount'] ?? 0);
+    }
     if ($rc !== null && $rc !== 0) $failed++;
 }
+$statCurrency = count($confirmedCurrencies) === 1 ? array_key_first($confirmedCurrencies) : null;
 
 $pending     = $total - $confirmed - $failed;
 $successRate = $total > 0 ? round(($confirmed / $total) * 100) : 0;
@@ -486,7 +493,7 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
     </div>
     <div class="stat-card">
         <div class="label">Total Collected</div>
-        <div class="value" id="statCollected">KES <?= number_format($totalAmt, 2) ?></div>
+        <div class="value" id="statCollected"><?= $statCurrency ? htmlspecialchars($statCurrency) . ' ' . number_format($totalAmt, 2) : number_format($totalAmt, 2) . ' (mixed)' ?></div>
         <div class="sub">Confirmed payments only</div>
     </div>
 </div>
@@ -500,8 +507,9 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             $barH    = $day['confirmed'] > 0 ? max(4, round(($day['confirmed'] / $maxCount) * ($svgH - $gap))) : 0;
             $barY    = $svgH - $barH;
             $isEmpty = $day['confirmed'] === 0;
+            $tipCur  = $statCurrency ?? '';
             $tip     = $day['confirmed'] > 0
-                ? $day['confirmed'] . ' payment' . ($day['confirmed'] !== 1 ? 's' : '') . ' — KES ' . number_format($day['amount'], 2)
+                ? $day['confirmed'] . ' payment' . ($day['confirmed'] !== 1 ? 's' : '') . ' — ' . ($tipCur ? $tipCur . ' ' : '') . number_format($day['amount'], 2)
                 : 'No confirmed payments';
         ?>
             <g>
@@ -599,7 +607,8 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             $icon     = ($rc === null) ? '⏳'        : ($rc === 0 ? '✅' : '❌');
             $rawPhone      = (string)($e['PhoneNumber'] ?? '');
             $phone         = $rawPhone ? '0' . substr($rawPhone, 3) : '—';
-            $amount        = isset($e['Amount']) ? 'KES ' . number_format((float)$e['Amount'], 2) : '—';
+            $currency      = $e['currency'] ?? 'KES';
+            $amount        = isset($e['Amount']) ? $currency . ' ' . number_format((float)$e['Amount'], 2) : '—';
             $sortAmt       = isset($e['Amount']) ? (float)$e['Amount'] : 0;
             $receipt       = $e['MpesaReceiptNumber'] ?? '—';
             $date          = $e['timestamp'] ?? '—';
@@ -617,6 +626,7 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             data-date="<?= substr($date, 0, 10) ?>"
             data-search="<?= strtolower(htmlspecialchars($phone . ' ' . $receipt . ' ' . $provider)) ?>"
             data-tx="<?= $txJson ?>"
+            data-currency="<?= htmlspecialchars($currency) ?>"
             data-sortnum="<?= $rowNum ?>"
             data-sortdate="<?= htmlspecialchars($date) ?>"
             data-sortphone="<?= htmlspecialchars($rawPhone) ?>"
@@ -816,7 +826,11 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
         if (elConfSub)   elConfSub.textContent   = successRate + '% success rate';
         if (elFailed)    elFailed.textContent    = failed;
         if (elFailedSub) elFailedSub.textContent = pending + ' pending';
-        if (elCollected) elCollected.textContent = 'KES ' + totalAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+        const currencies = [...new Set(visibleRows.filter(r => r.dataset.status === 'success').map(r => r.dataset.currency || 'KES'))];
+        const collectedLabel = currencies.length === 1
+            ? currencies[0] + ' ' + totalAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})
+            : totalAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' (mixed)';
+        if (elCollected) elCollected.textContent = collectedLabel;
     }
 
     // ---- Pagination ----
@@ -908,8 +922,9 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
         const icon   = (rc === null || rc === undefined) ? '⏳' : (rc === 0 ? '✅' : '❌');
         const rawPh  = String(tx.PhoneNumber || '');
         const phone  = rawPh ? '0' + rawPh.slice(3) : '—';
+        const currency = tx.currency || 'KES';
         const amount = tx.Amount
-            ? 'KES ' + Number(tx.Amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})
+            ? currency + ' ' + Number(tx.Amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})
             : '—';
         const bCls = {'success':'badge success','failed':'badge failed','pending':'badge pending'}[status];
 

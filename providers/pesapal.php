@@ -190,6 +190,7 @@ function provider_parse_callback(array $raw): array {
         'ResultDesc'         => $raw['payment_status_description'] ?? 'Unknown',
         'PhoneNumber'        => $phone,
         'Amount'             => $amount,
+        'currency'           => 'KES',
         'MpesaReceiptNumber' => $raw['confirmation_code'] ?? ($raw['order_tracking_id'] ?? ''),
         'TransactionDate'    => $raw['created_date'] ?? date('Y-m-d H:i:s'),
         'Reference'          => $raw['merchant_reference'] ?? '',
