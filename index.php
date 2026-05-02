@@ -266,6 +266,27 @@
         }
         .secure-badge svg { width: 12px; height: 12px; }
 
+        /* Copy receipt & pay again */
+        .copy-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px; font-weight: 600; padding: 2px 8px;
+            border: 1.5px solid currentColor; border-radius: 5px;
+            background: none; cursor: pointer; opacity: 0.7;
+            transition: opacity 0.15s; color: inherit; margin-left: 6px;
+            vertical-align: middle;
+        }
+        .copy-btn:hover { opacity: 1; }
+        .copy-btn.copied { opacity: 1; }
+
+        .pay-again-btn {
+            margin-top: 12px; width: 100%; padding: 10px;
+            background: none; color: var(--msg-success-text);
+            border: 1.5px solid currentColor; border-radius: 8px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: background 0.15s, opacity 0.15s;
+        }
+        .pay-again-btn:hover { opacity: 0.75; }
+
         /* Theme toggle */
         .theme-btn {
             position: fixed; bottom: 20px; right: 20px;
@@ -503,12 +524,13 @@
                     if (data.receipt || data.amount) {
                         receiptHtml = '<dl class="receipt-grid">';
                         if (data.amount)    receiptHtml += '<dt>Amount</dt><dd>KES ' + Number(data.amount).toLocaleString() + '</dd>';
-                        if (data.receipt)   receiptHtml += '<dt>Receipt</dt><dd>' + escHtml(data.receipt) + '</dd>';
+                        if (data.receipt)   receiptHtml += '<dt>Receipt</dt><dd>' + escHtml(data.receipt) + '<button class="copy-btn" onclick="copyReceipt(\'' + escHtml(data.receipt) + '\', this)" title="Copy receipt">Copy</button></dd>';
                         if (data.timestamp) receiptHtml += '<dt>Date</dt><dd>' + escHtml(String(data.timestamp)) + '</dd>';
                         receiptHtml += '</dl>';
                     }
+                    const payAgainHtml = '<button class="pay-again-btn" onclick="payAgain()">Make Another Payment</button>';
 
-                    showMessage('success', 'Payment Confirmed!', 'Transaction received successfully.' + receiptHtml);
+                    showMessage('success', 'Payment Confirmed!', 'Transaction received successfully.' + receiptHtml + payAgainHtml);
                     form.reset();
                     document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
 
@@ -520,6 +542,31 @@
                 }
             } catch (e) { /* keep polling */ }
         }, 5000);
+    }
+
+    function copyReceipt(receipt, btn) {
+        navigator.clipboard.writeText(receipt).then(() => {
+            const prev = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = prev; btn.classList.remove('copied'); }, 1500);
+        }).catch(() => {});
+    }
+
+    function payAgain() {
+        messageDiv.className = 'message';
+        resetProgress();
+        [phoneInput, amountInput, refInput].forEach(inp => {
+            inp.value = '';
+            inp.classList.remove('valid', 'invalid');
+        });
+        [phoneError, phoneOk, amountError, amountOk].forEach(el => el.classList.remove('show'));
+        phoneHint.style.display = '';
+        amountHint.style.display = '';
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Pay Now';
+        phoneInput.focus();
     }
 
     form.addEventListener('submit', async function (e) {

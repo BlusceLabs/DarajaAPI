@@ -41,7 +41,6 @@
             --chart-bar: #006633;
             --chart-bar-empty: #e8f0e8;
             --chart-label: #aaa;
-            --chart-gridline: #f0f0f0;
             --drawer-overlay: rgba(0,0,0,0.35);
             --drawer-panel: #fff;
             --detail-label: #aaa;
@@ -51,6 +50,7 @@
             --page-btn-text: #555;
             --page-btn-border: #e0e0e0;
             --page-btn-active: #006633;
+            --sort-arrow: #006633;
         }
         :root[data-theme="dark"] {
             --bg: #0d1117;
@@ -86,7 +86,6 @@
             --chart-bar: #3fb950;
             --chart-bar-empty: #1c2128;
             --chart-label: #636e7b;
-            --chart-gridline: #21262d;
             --drawer-overlay: rgba(0,0,0,0.65);
             --drawer-panel: #161b22;
             --detail-label: #636e7b;
@@ -96,6 +95,7 @@
             --page-btn-text: #adbac7;
             --page-btn-border: #30363d;
             --page-btn-active: #238636;
+            --sort-arrow: #3fb950;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -107,6 +107,8 @@
             padding: 32px 20px;
             transition: background 0.2s, color 0.2s;
         }
+
+        /* Header */
         .header {
             max-width: 960px; margin: 0 auto 24px;
             display: flex; align-items: flex-start; justify-content: space-between;
@@ -172,10 +174,8 @@
             box-shadow: 0 2px 10px var(--shadow);
         }
         .chart-title { font-size: 11px; font-weight: 700; color: var(--text-4); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
-        .chart-svg-wrap { width: 100%; }
         .chart-svg-wrap svg { width: 100%; height: 90px; display: block; overflow: visible; }
-        .chart-bar-group { cursor: default; }
-        .chart-bar { fill: var(--chart-bar); rx: 3; transition: opacity 0.15s; }
+        .chart-bar { fill: var(--chart-bar); transition: opacity 0.15s; }
         .chart-bar:hover { opacity: 0.8; }
         .chart-bar-empty { fill: var(--chart-bar-empty); }
         .chart-lbl { font-size: 9px; fill: var(--chart-label); text-anchor: middle; font-family: -apple-system, sans-serif; }
@@ -226,7 +226,6 @@
             transition: all 0.15s;
         }
         .filter-tab.active, .filter-tab:hover { background: #006633; color: #fff; border-color: #006633; }
-
         .search-wrap { position: relative; }
         .search-wrap input {
             padding: 6px 10px 6px 30px; border: 1.5px solid var(--search-border); border-radius: 8px;
@@ -241,11 +240,19 @@
             background: var(--surface-head); text-align: left; padding: 10px 14px;
             font-size: 10.5px; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.6px; color: var(--text-4); border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
         }
-        tbody tr {
-            border-bottom: 1px solid var(--border-row); transition: background 0.1s;
-            cursor: pointer;
+        thead th[data-col] {
+            cursor: pointer; user-select: none;
         }
+        thead th[data-col]:hover { color: var(--text-2); }
+        thead th[data-col]::after {
+            content: ' \2195'; opacity: 0.25; font-size: 10px; display: inline;
+        }
+        thead th[data-sort-active="asc"]::after  { content: ' \2191'; opacity: 1; color: var(--sort-arrow); }
+        thead th[data-sort-active="desc"]::after { content: ' \2193'; opacity: 1; color: var(--sort-arrow); }
+
+        tbody tr { border-bottom: 1px solid var(--border-row); transition: background 0.1s; cursor: pointer; }
         tbody tr:last-child { border-bottom: none; }
         tbody tr:hover { background: var(--row-hover); }
         td { padding: 11px 14px; font-size: 13px; vertical-align: middle; }
@@ -272,7 +279,7 @@
             flex-wrap: wrap; gap: 10px;
         }
         .page-info { font-size: 12px; color: var(--text-4); }
-        .page-buttons { display: flex; gap: 4px; }
+        .page-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
         .page-btn {
             padding: 4px 10px; border: 1.5px solid var(--page-btn-border);
             border-radius: 6px; font-size: 12px; font-weight: 600;
@@ -285,10 +292,7 @@
         .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
         /* Transaction detail drawer */
-        .drawer {
-            position: fixed; inset: 0; z-index: 1000;
-            pointer-events: none;
-        }
+        .drawer { position: fixed; inset: 0; z-index: 1000; pointer-events: none; }
         .drawer.open { pointer-events: all; }
         .drawer-overlay {
             position: absolute; inset: 0;
@@ -303,8 +307,7 @@
             box-shadow: -4px 0 30px rgba(0,0,0,0.15);
             transform: translateX(100%);
             transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
-            display: flex; flex-direction: column;
-            overflow: hidden;
+            display: flex; flex-direction: column; overflow: hidden;
         }
         .drawer.open .drawer-panel { transform: translateX(0); }
         .drawer-header {
@@ -320,7 +323,6 @@
         }
         .drawer-close:hover { background: var(--border); }
         .drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
-        .drawer-badge-wrap { margin-bottom: 18px; }
         .detail-grid { display: flex; flex-direction: column; gap: 2px; }
         .detail-row {
             display: flex; align-items: flex-start; gap: 10px;
@@ -332,10 +334,7 @@
             letter-spacing: 0.4px; color: var(--detail-label);
             min-width: 90px; flex-shrink: 0; margin-top: 2px;
         }
-        .detail-value {
-            font-size: 13px; color: var(--detail-value);
-            word-break: break-all; font-family: monospace;
-        }
+        .detail-value { font-size: 13px; color: var(--detail-value); word-break: break-all; font-family: monospace; }
         .detail-value.normal { font-family: inherit; }
         .detail-divider {
             font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -344,7 +343,7 @@
             border-bottom: 1px solid var(--border-light);
         }
 
-        /* Theme toggle */
+        /* Theme button */
         .theme-btn {
             position: fixed; bottom: 20px; right: 20px;
             width: 40px; height: 40px; border-radius: 50%;
@@ -360,9 +359,6 @@
 <body>
 
 <?php
-// ---------------------------------------------------------------
-// Load log
-// ---------------------------------------------------------------
 $logFile = __DIR__ . '/mpesa_log.json';
 $entries = [];
 
@@ -374,9 +370,6 @@ if (file_exists($logFile)) {
     }
 }
 
-// ---------------------------------------------------------------
-// Summary stats
-// ---------------------------------------------------------------
 $total     = count($entries);
 $confirmed = 0;
 $failed    = 0;
@@ -384,7 +377,7 @@ $totalAmt  = 0;
 
 foreach ($entries as $e) {
     $rc = $e['ResultCode'] ?? null;
-    if ($rc === 0)              { $confirmed++; $totalAmt += (float)($e['Amount'] ?? 0); }
+    if ($rc === 0)               { $confirmed++; $totalAmt += (float)($e['Amount'] ?? 0); }
     if ($rc !== null && $rc !== 0) $failed++;
 }
 
@@ -392,17 +385,11 @@ $pending     = $total - $confirmed - $failed;
 $successRate = $total > 0 ? round(($confirmed / $total) * 100) : 0;
 $lastUpdated = date('H:i:s');
 
-// ---------------------------------------------------------------
-// 7-day chart data
-// ---------------------------------------------------------------
+// 7-day chart
 $chartDays = [];
 for ($i = 6; $i >= 0; $i--) {
     $d = date('Y-m-d', strtotime("-$i days"));
-    $chartDays[$d] = [
-        'label'     => date('D', strtotime("-$i days")),
-        'confirmed' => 0,
-        'amount'    => 0.0,
-    ];
+    $chartDays[$d] = ['label' => date('D', strtotime("-$i days")), 'confirmed' => 0, 'amount' => 0.0];
 }
 foreach ($entries as $e) {
     if (($e['ResultCode'] ?? null) !== 0) continue;
@@ -413,18 +400,12 @@ foreach ($entries as $e) {
     }
 }
 $maxCount = max(array_map(fn($d) => $d['confirmed'], $chartDays));
-if ($maxCount === 0) $maxCount = 1; // avoid division by zero
+if ($maxCount === 0) $maxCount = 1;
 
-// SVG chart constants
-$svgW   = 700;
-$svgH   = 68;   // usable bar area height
-$lblH   = 16;   // label row height
-$barW   = 60;
-$slotW  = $svgW / 7; // 100
-$gap    = 8;    // top padding
+$svgW  = 700; $svgH = 68; $lblH = 16;
+$barW  = 60;  $slotW = $svgW / 7; $gap = 8;
 ?>
 
-<!-- HEADER -->
 <div class="header">
     <div>
         <h1>Transaction Log</h1>
@@ -451,7 +432,6 @@ $gap    = 8;    // top padding
     </div>
 </div>
 
-<!-- STATS -->
 <div class="stats">
     <div class="stat-card">
         <div class="label">Total Requests</div>
@@ -475,24 +455,21 @@ $gap    = 8;    // top padding
     </div>
 </div>
 
-<!-- 7-DAY CHART -->
 <div class="chart-card">
     <div class="chart-title">Confirmed Payments — Last 7 Days</div>
     <div class="chart-svg-wrap">
         <svg viewBox="0 0 <?= $svgW ?> <?= $svgH + $lblH ?>" preserveAspectRatio="none" role="img" aria-label="Last 7 days of confirmed payments">
-        <?php
-        $dayIdx = 0;
-        foreach ($chartDays as $date => $day):
-            $cx       = $slotW * $dayIdx + $slotW / 2;
-            $barH     = $day['confirmed'] > 0 ? max(4, round(($day['confirmed'] / $maxCount) * ($svgH - $gap))) : 0;
-            $barY     = $svgH - $barH;
-            $isEmpty  = $day['confirmed'] === 0;
-            $tooltip  = $day['confirmed'] > 0
+        <?php $dayIdx = 0; foreach ($chartDays as $date => $day):
+            $cx      = $slotW * $dayIdx + $slotW / 2;
+            $barH    = $day['confirmed'] > 0 ? max(4, round(($day['confirmed'] / $maxCount) * ($svgH - $gap))) : 0;
+            $barY    = $svgH - $barH;
+            $isEmpty = $day['confirmed'] === 0;
+            $tip     = $day['confirmed'] > 0
                 ? $day['confirmed'] . ' payment' . ($day['confirmed'] !== 1 ? 's' : '') . ' — KES ' . number_format($day['amount'], 2)
                 : 'No confirmed payments';
         ?>
-            <g class="chart-bar-group">
-                <title><?= htmlspecialchars($date . ': ' . $tooltip) ?></title>
+            <g>
+                <title><?= htmlspecialchars($date . ': ' . $tip) ?></title>
                 <?php if ($isEmpty): ?>
                     <rect x="<?= $cx - $barW/2 ?>" y="<?= $svgH - 3 ?>" width="<?= $barW ?>" height="3" rx="2" class="chart-bar-empty"/>
                 <?php else: ?>
@@ -508,7 +485,6 @@ $gap    = 8;    // top padding
     </div>
 </div>
 
-<!-- DATE FILTER -->
 <div class="date-filter">
     <label>Date Range</label>
     <input type="date" id="dateFrom" onchange="onFilterChange()" title="From date">
@@ -520,7 +496,6 @@ $gap    = 8;    // top padding
     </div>
 </div>
 
-<!-- TABLE -->
 <div class="table-wrap">
     <div class="table-toolbar">
         <div class="toolbar-left">
@@ -551,12 +526,12 @@ $gap    = 8;    // top padding
     <table id="txTable">
         <thead>
             <tr>
-                <th>#</th>
-                <th>Date / Time</th>
-                <th>Phone</th>
-                <th>Amount</th>
-                <th>Receipt</th>
-                <th>Status</th>
+                <th data-col="num"     onclick="setSort('num')">#</th>
+                <th data-col="date"    onclick="setSort('date')">Date / Time</th>
+                <th data-col="phone"   onclick="setSort('phone')">Phone</th>
+                <th data-col="amount"  onclick="setSort('amount')">Amount</th>
+                <th data-col="receipt" onclick="setSort('receipt')">Receipt</th>
+                <th data-col="status"  onclick="setSort('status')">Status</th>
                 <th>Description</th>
             </tr>
         </thead>
@@ -569,20 +544,28 @@ $gap    = 8;    // top padding
             $rawPhone = (string)($e['PhoneNumber'] ?? '');
             $phone    = $rawPhone ? '0' . substr($rawPhone, 3) : '—';
             $amount   = isset($e['Amount']) ? 'KES ' . number_format((float)$e['Amount'], 2) : '—';
+            $sortAmt  = isset($e['Amount']) ? (float)$e['Amount'] : 0;
             $receipt  = $e['MpesaReceiptNumber'] ?? '—';
             $date     = $e['timestamp'] ?? '—';
             $desc     = $e['ResultDesc'] ?? '—';
             $txJson   = htmlspecialchars(json_encode($e), ENT_QUOTES, 'UTF-8');
+            $rowNum   = $total - $i;
         ?>
         <tr
             data-status="<?= $status ?>"
             data-date="<?= substr($date, 0, 10) ?>"
             data-search="<?= strtolower(htmlspecialchars($phone . ' ' . $receipt)) ?>"
             data-tx="<?= $txJson ?>"
+            data-sortnum="<?= $rowNum ?>"
+            data-sortdate="<?= htmlspecialchars($date) ?>"
+            data-sortphone="<?= htmlspecialchars($rawPhone) ?>"
+            data-sortamount="<?= $sortAmt ?>"
+            data-sortreceipt="<?= htmlspecialchars($receipt === '—' ? '' : $receipt) ?>"
+            data-sortstatus="<?= $status ?>"
             onclick="openDrawer(this)"
             title="Click to view full details"
         >
-            <td style="color:var(--text-6);font-size:12px"><?= $total - $i ?></td>
+            <td style="color:var(--text-6);font-size:12px"><?= $rowNum ?></td>
             <td style="white-space:nowrap;color:var(--text-8)"><?= htmlspecialchars($date) ?></td>
             <td class="phone"><?= htmlspecialchars($phone) ?></td>
             <td class="amount"><?= htmlspecialchars($amount) ?></td>
@@ -598,7 +581,7 @@ $gap    = 8;    // top padding
     <?php endif; ?>
 </div>
 
-<!-- DETAIL DRAWER -->
+<!-- Detail drawer -->
 <div class="drawer" id="drawer">
     <div class="drawer-overlay" onclick="closeDrawer()"></div>
     <div class="drawer-panel">
@@ -627,19 +610,15 @@ $gap    = 8;    // top padding
     updateThemeIcon();
 
     // ---- Auto-refresh ----
-    let autoRefresh = true;
-    let countdown   = 30;
-    let timer       = null;
+    let autoRefresh = true, countdown = 30, timer = null;
     const toggleSwitch = document.getElementById('toggleSwitch');
     const countdownEl  = document.getElementById('countdown');
-
     toggleSwitch.parentElement.addEventListener('click', () => {
         autoRefresh = !autoRefresh;
         toggleSwitch.classList.toggle('on', autoRefresh);
         if (autoRefresh) { countdown = 30; startCountdown(); }
         else { clearInterval(timer); countdownEl.textContent = ''; }
     });
-
     function startCountdown() {
         clearInterval(timer);
         timer = setInterval(() => {
@@ -650,12 +629,49 @@ $gap    = 8;    // top padding
     }
     if (autoRefresh) startCountdown();
 
-    // ---- Filter + search + pagination state ----
-    const PAGE_SIZE    = 20;
-    let currentFilter  = 'all';
-    let currentPage    = 1;
-    let visibleRows    = [];
+    // ---- State ----
+    const PAGE_SIZE   = 20;
+    let currentFilter = 'all';
+    let currentPage   = 1;
+    let visibleRows   = [];
+    let sortCol       = null;   // 'num'|'date'|'phone'|'amount'|'receipt'|'status'
+    let sortDir       = 'asc';  // 'asc'|'desc'
 
+    // ---- Sort ----
+    function setSort(col) {
+        if (sortCol === col) {
+            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortCol = col;
+            sortDir = 'asc';
+        }
+        updateSortHeaders();
+        applySearch();
+    }
+
+    function updateSortHeaders() {
+        document.querySelectorAll('thead th[data-col]').forEach(th => {
+            th.dataset.sortActive = (th.dataset.col === sortCol) ? sortDir : '';
+        });
+    }
+
+    function sortRows() {
+        if (!sortCol) return;
+        const numeric = sortCol === 'amount' || sortCol === 'num';
+        visibleRows.sort((a, b) => {
+            let va = a.dataset['sort' + sortCol] ?? '';
+            let vb = b.dataset['sort' + sortCol] ?? '';
+            let cmp;
+            if (numeric) {
+                cmp = (parseFloat(va) || 0) - (parseFloat(vb) || 0);
+            } else {
+                cmp = va.localeCompare(vb, undefined, { sensitivity: 'base' });
+            }
+            return sortDir === 'asc' ? cmp : -cmp;
+        });
+    }
+
+    // ---- Filter / search ----
     function applyFilter(type, btn) {
         currentFilter = type;
         document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
@@ -680,18 +696,18 @@ $gap    = 8;    // top padding
             const rowDate     = row.dataset.date || '';
             const matchFrom   = !dateFrom || rowDate >= dateFrom;
             const matchTo     = !dateTo   || rowDate <= dateTo;
-            if (matchFilter && matchSearch && matchFrom && matchTo) {
-                visibleRows.push(row);
-            }
+            if (matchFilter && matchSearch && matchFrom && matchTo) visibleRows.push(row);
             row.style.display = 'none';
         });
 
+        sortRows();
         currentPage = 1;
         renderPage();
         renderPagination();
         updateFilterSummary(visibleRows.length);
     }
 
+    // ---- Pagination ----
     function renderPage() {
         const start = (currentPage - 1) * PAGE_SIZE;
         const end   = start + PAGE_SIZE;
@@ -707,38 +723,34 @@ $gap    = 8;    // top padding
         if (!el) return;
         const total = visibleRows.length;
         const pages = Math.ceil(total / PAGE_SIZE);
-
         if (pages <= 1) { el.style.display = 'none'; return; }
         el.style.display = 'flex';
 
         const start = (currentPage - 1) * PAGE_SIZE + 1;
         const end   = Math.min(currentPage * PAGE_SIZE, total);
 
-        let btns = '';
-        btns += `<span class="page-info">Showing ${start}–${end} of ${total}</span>`;
-        btns += '<div class="page-buttons">';
-        btns += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
+        let html = `<span class="page-info">Showing ${start}–${end} of ${total}</span><div class="page-buttons">`;
+        html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
 
         const maxBtns = 7;
-        let startPage = Math.max(1, currentPage - 3);
-        let endPage   = Math.min(pages, startPage + maxBtns - 1);
-        if (endPage - startPage < maxBtns - 1) startPage = Math.max(1, endPage - maxBtns + 1);
+        let sp = Math.max(1, currentPage - 3);
+        let ep = Math.min(pages, sp + maxBtns - 1);
+        if (ep - sp < maxBtns - 1) sp = Math.max(1, ep - maxBtns + 1);
 
-        if (startPage > 1) {
-            btns += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
-            if (startPage > 2) btns += `<button class="page-btn" disabled>…</button>`;
+        if (sp > 1) {
+            html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+            if (sp > 2) html += `<button class="page-btn" disabled>…</button>`;
         }
-        for (let p = startPage; p <= endPage; p++) {
-            btns += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
+        for (let p = sp; p <= ep; p++) {
+            html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
         }
-        if (endPage < pages) {
-            if (endPage < pages - 1) btns += `<button class="page-btn" disabled>…</button>`;
-            btns += `<button class="page-btn" onclick="goToPage(${pages})">${pages}</button>`;
+        if (ep < pages) {
+            if (ep < pages - 1) html += `<button class="page-btn" disabled>…</button>`;
+            html += `<button class="page-btn" onclick="goToPage(${pages})">${pages}</button>`;
         }
-
-        btns += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''}>Next ›</button>`;
-        btns += '</div>';
-        el.innerHTML = btns;
+        html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''}>Next ›</button>`;
+        html += '</div>';
+        el.innerHTML = html;
     }
 
     function goToPage(page) {
@@ -751,10 +763,9 @@ $gap    = 8;    // top padding
     }
 
     function updateFilterSummary(count) {
-        const el = document.getElementById('filterSummary');
-        if (!el) return;
+        const el    = document.getElementById('filterSummary');
         const total = document.querySelectorAll('#txTable tbody tr').length;
-        el.textContent = count < total ? `${count} of ${total} shown` : '';
+        if (el) el.textContent = count < total ? `${count} of ${total} shown` : '';
     }
 
     function clearDates() {
@@ -763,7 +774,7 @@ $gap    = 8;    // top padding
         onFilterChange();
     }
 
-    // ---- Export link with date filter ----
+    // ---- Export link ----
     function updateExportLink() {
         const from = document.getElementById('dateFrom').value;
         const to   = document.getElementById('dateTo').value;
@@ -776,29 +787,29 @@ $gap    = 8;    // top padding
         if (btn) btn.href = url;
     }
 
-    // ---- Transaction detail drawer ----
+    // ---- Detail drawer ----
     function openDrawer(row) {
-        const tx = JSON.parse(row.dataset.tx);
-        const rc = tx.ResultCode;
-        const status  = (rc === null || rc === undefined) ? 'pending' : (rc === 0 ? 'success' : 'failed');
-        const label   = (rc === null || rc === undefined) ? 'Pending' : (rc === 0 ? 'Confirmed' : 'Failed');
-        const icon    = (rc === null || rc === undefined) ? '⏳' : (rc === 0 ? '✅' : '❌');
-        const rawPhone = String(tx.PhoneNumber || '');
-        const phone   = rawPhone ? '0' + rawPhone.slice(3) : '—';
-        const amount  = tx.Amount ? 'KES ' + Number(tx.Amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
-
-        const badgeClass = {'success':'badge success','failed':'badge failed','pending':'badge pending'}[status];
+        const tx     = JSON.parse(row.dataset.tx);
+        const rc     = tx.ResultCode;
+        const status = (rc === null || rc === undefined) ? 'pending' : (rc === 0 ? 'success' : 'failed');
+        const label  = (rc === null || rc === undefined) ? 'Pending' : (rc === 0 ? 'Confirmed' : 'Failed');
+        const icon   = (rc === null || rc === undefined) ? '⏳' : (rc === 0 ? '✅' : '❌');
+        const rawPh  = String(tx.PhoneNumber || '');
+        const phone  = rawPh ? '0' + rawPh.slice(3) : '—';
+        const amount = tx.Amount
+            ? 'KES ' + Number(tx.Amount).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})
+            : '—';
+        const bCls = {'success':'badge success','failed':'badge failed','pending':'badge pending'}[status];
 
         const rows = [
-            ['Status',     `<span class="${badgeClass}">${icon} ${label}</span>`, true],
-            ['Phone',      phone],
-            ['Amount',     amount],
-            ['Receipt',    tx.MpesaReceiptNumber || '—'],
-            ['Date',       tx.timestamp || '—'],
-            ['Description',tx.ResultDesc || '—'],
-            ['Reference',  tx.AccountReference || tx.reference || '—'],
+            ['Status',      `<span class="${bCls}">${icon} ${label}</span>`, true],
+            ['Phone',       phone],
+            ['Amount',      amount],
+            ['Receipt',     tx.MpesaReceiptNumber || '—'],
+            ['Date',        tx.timestamp || '—'],
+            ['Description', tx.ResultDesc || '—'],
+            ['Reference',   tx.AccountReference || tx.reference || '—'],
         ];
-
         const techRows = [
             ['Result Code',  String(rc ?? '—')],
             ['Merchant ID',  tx.MerchantRequestID || '—'],
@@ -806,20 +817,12 @@ $gap    = 8;    // top padding
         ];
 
         let html = '<div class="detail-grid">';
-        rows.forEach(([lbl, val, isHtml]) => {
-            html += `<div class="detail-row">
-                <span class="detail-label">${esc(lbl)}</span>
-                <span class="detail-value normal">${isHtml ? val : esc(String(val))}</span>
-            </div>`;
+        rows.forEach(([l, v, isHtml]) => {
+            html += `<div class="detail-row"><span class="detail-label">${esc(l)}</span><span class="detail-value normal">${isHtml ? v : esc(String(v))}</span></div>`;
         });
-        html += '</div>';
-        html += '<div class="detail-divider">Technical Details</div>';
-        html += '<div class="detail-grid">';
-        techRows.forEach(([lbl, val]) => {
-            html += `<div class="detail-row">
-                <span class="detail-label">${esc(lbl)}</span>
-                <span class="detail-value">${esc(String(val))}</span>
-            </div>`;
+        html += '</div><div class="detail-divider">Technical Details</div><div class="detail-grid">';
+        techRows.forEach(([l, v]) => {
+            html += `<div class="detail-row"><span class="detail-label">${esc(l)}</span><span class="detail-value">${esc(String(v))}</span></div>`;
         });
         html += '</div>';
 
@@ -836,7 +839,9 @@ $gap    = 8;    // top padding
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
     function esc(s) {
-        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     // ---- Init ----

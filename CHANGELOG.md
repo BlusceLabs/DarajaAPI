@@ -7,7 +7,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [1.3.0] — 2024-12-10
+## [1.4.0] — 2026-05-02
+
+### Added
+- **Column sorting** on `admin.php` — click any column header (#, Date/Time, Phone, Amount, Receipt, Status) to sort ascending or descending; active sort column shows a ↑/↓ arrow; works in combination with all filters and pagination
+- **Copy-to-clipboard** receipt button on the payment success screen — a small inline button next to the M-Pesa receipt number; shows a "Copied!" confirmation for 1.5 seconds
+- **Pay Again button** on the payment success screen — resets the form, clears all field state, and removes the success message so another payment can be made without a page reload
+
+### Improved
+- `admin.php` — `data-sort*` attributes added to each table row for fast client-side sorting without re-parsing JSON
+- `index.php` — success state is now a complete, self-contained flow; no reload needed between payments
+
+---
+
+## [1.3.0] — 2026-05-02
+
+### Added
+- **7-day revenue chart** on `admin.php` — pure SVG bar chart computed in PHP; shows confirmed payment counts per day for the last 7 days; no JS charting library required
+- **Transaction detail drawer** on `admin.php` — click any table row to slide in a detail panel showing phone, amount, receipt, date, description, reference, result code, merchant request ID, and checkout request ID; closes with ✕, overlay click, or Escape key
+- **Pagination** on `admin.php` — 20 rows per page with smart page-number rendering (ellipsis for long ranges); works in combination with status filter, search, and date range; scrolls to top on page change
+- **Export CSV with date range** — `export.php` now accepts `?from=YYYY-MM-DD&to=YYYY-MM-DD` query params; filename reflects the range; Export CSV button on `admin.php` dynamically updates its href with the active date filter
+- **Result Code** column added to the CSV export
+
+---
+
+## [1.2.0] — 2026-05-02
 
 ### Added
 - **`.htaccess`** — blocks direct browser access to `config.php` and `mpesa_log.json`; disables directory listings; adds security headers; 404 routed to `404.php`
@@ -18,7 +42,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [1.2.0] — 2024-12-10
+## [1.1.0] — 2026-05-02
 
 ### Added
 - **Real-time inline validation** on payment form — phone and amount fields show green/red feedback as you type, before submission
@@ -37,22 +61,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [1.1.0] — 2024-12-10
+## [1.0.1] — 2026-05-02
 
 ### Added
 - `admin.php` — transaction log viewer with summary stats and status filtering
 - Quick-select amount chips on the payment page (KES 50, 100, 500, 1,000, 2,500, 5,000)
 - Optional **Account Reference** field on the payment form
 - Receipt number, amount, and timestamp shown on payment confirmation
-- `CHANGELOG.md` — this file
-- `CONTRIBUTING.md` — contribution guide
-- `config.example.php` — safe credential template for contributors
-- `favicon.svg` — browser tab icon
+- Dark mode — 🌙/☀️ toggle on every page; persists via `localStorage`; respects `prefers-color-scheme` on first visit
+- `CHANGELOG.md`, `CONTRIBUTING.md`, `config.example.php`, `favicon.svg`
 
 ### Fixed
 - `stk_push.php` — was reading from `$_GET` instead of the POST JSON body sent by the frontend
 - `config.php` — removed incorrect `header()` call that broke files requiring this config
-- `stk_push.php` — now properly imports `config.php` for credentials
 - Phone number validation now rejects non-Safaricom numbers before calling the API
 
 ### Improved
@@ -63,7 +84,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [1.0.0] — 2024-12-10
+## [1.0.0] — 2026-05-02
 
 ### Added
 - Initial release: STK Push via TinyPesa API
