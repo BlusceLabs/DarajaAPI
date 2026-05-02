@@ -595,10 +595,18 @@
             const data = await res.json();
 
             if (data.success) {
-                const ref = data.reference ? ' <span style="opacity:0.75;font-size:12px">(Ref: ' + escHtml(data.reference) + ')</span>' : '';
-                showMessage('waiting', 'Check Your Phone!' + ref,
-                    'An M-Pesa prompt has been sent to <strong>' + escHtml(phone) + '</strong>. Enter your PIN to complete the payment.');
-                startPolling(phone);
+                if (data.flow === 'redirect' && data.redirect_url) {
+                    // Hosted checkout — redirect to provider's payment page
+                    showMessage('waiting', 'Redirecting…',
+                        'Taking you to the payment page. Please complete your payment there.');
+                    setTimeout(() => { window.location.href = data.redirect_url; }, 1500);
+                } else {
+                    // STK Push — wait for PIN on phone
+                    const ref = data.reference ? ' <span style="opacity:0.75;font-size:12px">(Ref: ' + escHtml(data.reference) + ')</span>' : '';
+                    showMessage('waiting', 'Check Your Phone!' + ref,
+                        'An M-Pesa prompt has been sent to <strong>' + escHtml(phone) + '</strong>. Enter your PIN to complete the payment.');
+                    startPolling(phone);
+                }
             } else {
                 showMessage('error', 'Request Failed', escHtml(data.message || 'Something went wrong. Please try again.'));
             }

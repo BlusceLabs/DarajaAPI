@@ -1,5 +1,5 @@
 <?php
-// stk_push.php — Initiates an M-Pesa STK Push via TinyPesa
+// stk_push.php — Payment initiation router (provider-agnostic)
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -16,10 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // ------------------------------------------------------------------
 // RATE LIMITING — max 5 requests per IP per minute
 // ------------------------------------------------------------------
-$ip        = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-$rateFile  = sys_get_temp_dir() . '/mpesa_rate_' . md5($ip) . '.json';
-$rateLimit = 5;
-$rateWindow = 60; // seconds
+$ip         = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$rateFile   = sys_get_temp_dir() . '/mpesa_rate_' . md5($ip) . '.json';
+$rateLimit  = 5;
+$rateWindow = 60;
 
 $rateData = ['count' => 0, 'window_start' => time()];
 if (file_exists($rateFile)) {
@@ -53,7 +53,6 @@ $phone     = trim($data['phone']     ?? '');
 $amount    = trim($data['amount']    ?? '');
 $reference = trim($data['reference'] ?? '');
 
-// Validation
 if (!$phone || !$amount) {
     echo json_encode(['success' => false, 'message' => 'Phone number and amount are required.']);
     exit();
@@ -64,7 +63,7 @@ if (!is_numeric($amount) || (float)$amount < 1 || (float)$amount > 150000) {
     exit();
 }
 
-// Normalise phone to 2547XXXXXXXX or 2541XXXXXXXX
+// Normalise phone to 254XXXXXXXXX
 $phone = preg_replace('/^(\+254|254|0)/', '', $phone);
 if (!preg_match('/^(7|1)\d{8}$/', $phone)) {
     echo json_encode(['success' => false, 'message' => 'Invalid Safaricom phone number. Use 07XX or 01XX format.']);
@@ -80,48 +79,20 @@ if (!$reference) {
 }
 
 // ------------------------------------------------------------------
-// CALL TINYPESA
+// LOAD ACTIVE PROVIDER
 // ------------------------------------------------------------------
-$body = http_build_query([
-    'amount'     => (int)$amount,
-    'msisdn'     => $phone,
-    'account_no' => $reference,
-]);
+$provider     = defined('PAYMENT_PROVIDER') ? PAYMENT_PROVIDER : 'tinypesa';
+$providerFile = __DIR__ . '/providers/' . preg_replace('/[^a-z]/', '', $provider) . '.php';
 
-$ch = curl_init();
-curl_setopt_array($ch, [
-    CURLOPT_URL            => TINYPESA_URL,
-    CURLOPT_POST           => true,
-    CURLOPT_POSTFIELDS     => $body,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT        => 30,
-    CURLOPT_HTTPHEADER     => [
-        'ApiKey: '     . TINYPESA_API_KEY,
-        'Content-Type: application/x-www-form-urlencoded',
-        'Accept: application/json',
-    ],
-]);
-
-$response = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlErr  = curl_error($ch);
-curl_close($ch);
-
-if ($curlErr) {
-    echo json_encode(['success' => false, 'message' => 'Connection error: ' . $curlErr]);
+if (!file_exists($providerFile)) {
+    echo json_encode(['success' => false, 'message' => 'Unsupported payment provider: ' . htmlspecialchars($provider)]);
     exit();
 }
 
-$result = json_decode($response, true);
+require_once $providerFile;
 
-if ($httpCode === 200) {
-    echo json_encode([
-        'success'   => true,
-        'message'   => 'STK Push sent! Check your phone.',
-        'reference' => $reference,
-    ]);
-} else {
-    $errMsg = $result['message'] ?? $result['detail'] ?? 'Unexpected error from payment provider.';
-    echo json_encode(['success' => false, 'message' => $errMsg]);
-}
-?>
+// ------------------------------------------------------------------
+// INITIATE PAYMENT
+// ------------------------------------------------------------------
+$result = provider_initiate($phone, (float)$amount, $reference);
+echo json_encode($result);

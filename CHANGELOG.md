@@ -7,6 +7,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-05-02
+
+### Added
+- **Multi-provider payment support** — a single `PAYMENT_PROVIDER` constant in `config.php` switches the entire integration
+- **Provider abstraction layer** — `providers/` directory with a shared interface contract (`base.php`) and four isolated provider files; adding a future provider never touches core routing code
+- **TinyPesa provider** (`providers/tinypesa.php`) — refactored from `stk_push.php` into the provider contract; behaviour unchanged
+- **Safaricom Daraja provider** (`providers/daraja.php`) — direct Daraja STK Push; fetches OAuth token using consumer key + secret; supports `sandbox` and `production` via `DARAJA_ENV`
+- **PesaPal V3 provider** (`providers/pesapal.php`) — hosted checkout; registers IPN, submits order, returns `redirect_url`; `callback_pesapal.php` queries `GetTransactionStatus` and logs the result
+- **Flutterwave provider** (`providers/flutterwave.php`) — hosted checkout; posts to `/v3/payments`, returns `redirect_url`; `callback_flutterwave.php` verifies `verif-hash` signature and logs result
+- **Redirect flow in frontend** — `index.php` detects `flow: 'redirect'` in the API response and navigates to `redirect_url` with a brief message instead of starting the STK polling loop
+- **`callback_pesapal.php`** — dedicated IPN endpoint for PesaPal
+- **`callback_flutterwave.php`** — dedicated webhook endpoint for Flutterwave with signature verification
+- **`provider` field in log entries** — every transaction carries `"provider": "tinypesa"|"daraja"|"pesapal"|"flutterwave"`
+- **Provider column in admin panel** — blue Provider badge in the transaction table, sortable, searchable, shown in the detail drawer
+- **Provider column in CSV export** — `export.php` includes a Provider column
+- **Provider-aware health check** — `health.php` shows active provider name, flow type, and checks required constants per provider
+
+### Improved
+- `stk_push.php` is now a thin router — validates input, rate-limits, loads active provider, calls `provider_initiate()`
+- `callback.php` loads active provider and calls `provider_parse_callback()` — no provider logic inline
+- `config.example.php` — four commented provider sections each with all required constants
+
+---
+
 ## [1.4.0] — 2026-05-02
 
 ### Added

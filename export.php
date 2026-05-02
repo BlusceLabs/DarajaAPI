@@ -51,22 +51,22 @@ $out = fopen('php://output', 'w');
 fwrite($out, "\xEF\xBB\xBF");
 
 // Header row
-fputcsv($out, ['#', 'Date / Time', 'Phone', 'Amount (KES)', 'Receipt', 'Status', 'Result Code', 'Result Description', 'Reference']);
+fputcsv($out, ['#', 'Date / Time', 'Provider', 'Phone', 'Amount (KES)', 'Receipt', 'Status', 'Result Code', 'Result Description', 'Reference']);
 
 $total = count($entries);
 foreach (array_reverse($entries) as $i => $e) {
-    $rc      = $e['ResultCode'] ?? null;
-    $status  = ($rc === null) ? 'Pending' : ($rc === 0 ? 'Confirmed' : 'Failed');
-    $phone   = isset($e['PhoneNumber']) ? '0' . substr((string)$e['PhoneNumber'], 3) : '';
-    $amount  = $e['Amount'] ?? '';
-    $receipt = $e['MpesaReceiptNumber'] ?? '';
-    $date    = $e['timestamp'] ?? '';
-    $desc    = $e['ResultDesc'] ?? '';
-    $ref     = $e['AccountReference'] ?? $e['reference'] ?? '';
+    $rc       = $e['ResultCode'] ?? null;
+    $status   = ($rc === null) ? 'Pending' : ($rc === 0 ? 'Confirmed' : 'Failed');
+    $phone    = isset($e['PhoneNumber']) ? '0' . substr((string)$e['PhoneNumber'], 3) : '';
+    $amount   = $e['Amount'] ?? '';
+    $receipt  = $e['MpesaReceiptNumber'] ?? '';
+    $date     = $e['timestamp'] ?? '';
+    $desc     = $e['ResultDesc'] ?? '';
+    $ref      = $e['AccountReference'] ?? $e['reference'] ?? $e['Reference'] ?? '';
+    $provider = $e['provider'] ?? 'tinypesa';
 
-    fputcsv($out, [$total - $i, $date, $phone, $amount, $receipt, $status, $rc ?? '', $desc, $ref]);
+    fputcsv($out, [$total - $i, $date, $provider, $phone, $amount, $receipt, $status, $rc ?? '', $desc, $ref]);
 }
 
 fclose($out);
 exit();
-?>

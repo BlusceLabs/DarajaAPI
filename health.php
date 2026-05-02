@@ -27,6 +27,7 @@
             --badge-ok-bg: #e8f8ef;    --badge-ok-text: #1a6b3a;
             --badge-warn-bg: #fff8e6;  --badge-warn-text: #7a5a00;
             --badge-err-bg: #fdf2f2;   --badge-err-text: #8b2020;
+            --provider-bg: #eef4ff;    --provider-border: #c0d8ff; --provider-text: #1a3a8f;
         }
         :root[data-theme="dark"] {
             --bg: #0d1117;
@@ -48,6 +49,7 @@
             --badge-ok-bg: #0f2a1a;    --badge-ok-text: #56d364;
             --badge-warn-bg: #2a2000;  --badge-warn-text: #e3b341;
             --badge-err-bg: #2d1111;   --badge-err-text: #f97171;
+            --provider-bg: #0d1e3a;    --provider-border: #1a3a6b; --provider-text: #79b8ff;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -76,6 +78,22 @@
         }
         :root[data-theme="dark"] .nav-link { color: #3fb950; }
         .nav-link:hover { background: var(--nav-hover); }
+
+        /* Active provider banner */
+        .provider-banner {
+            border-radius: 12px; padding: 14px 18px; margin-bottom: 18px;
+            background: var(--provider-bg); border: 1.5px solid var(--provider-border);
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .provider-icon { font-size: 20px; }
+        .provider-info { flex: 1; }
+        .provider-info strong { font-size: 13.5px; font-weight: 700; color: var(--provider-text); display: block; }
+        .provider-info span   { font-size: 12px; color: var(--text-3); margin-top: 2px; display: block; }
+        .provider-badge {
+            font-size: 11px; font-weight: 700; padding: 4px 12px;
+            border-radius: 20px; background: var(--provider-text); color: #fff;
+            text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0;
+        }
 
         .overall {
             border-radius: 14px; padding: 18px 22px; margin-bottom: 20px;
@@ -147,6 +165,7 @@ function degradeOverall(string &$overall, string $status) {
     elseif ($status === 'warning' && $overall === 'ok') $overall = 'warning';
 }
 
+// ---- Environment checks (provider-independent) ----
 $phpVersion = PHP_VERSION;
 $phpOk      = version_compare($phpVersion, '7.4.0', '>=');
 $phpStatus  = $phpOk ? 'ok' : 'error';
@@ -168,15 +187,80 @@ $configStatus = $configExists ? 'ok' : 'error';
 addCheck($checks, 'config.php', $configExists ? 'Found' : 'Missing — copy config.example.php to config.php', $configStatus, $configExists ? 'Found' : 'Missing');
 degradeOverall($overall, $configStatus);
 
-$apiKeySet = false;
+// ---- Load config and determine active provider ----
+$activeProvider = 'tinypesa';
+$providerLabels = [
+    'tinypesa'    => ['TinyPesa',      'stk',      '📱'],
+    'daraja'      => ['Safaricom Daraja', 'stk',   '📱'],
+    'pesapal'     => ['PesaPal V3',    'redirect',  '🌐'],
+    'flutterwave' => ['Flutterwave',   'redirect',  '🌐'],
+];
+
 if ($configExists) {
     require_once __DIR__ . '/config.php';
-    $apiKeySet = defined('TINYPESA_API_KEY') && TINYPESA_API_KEY !== 'YOUR_TINYPESA_API_KEY_HERE' && strlen(TINYPESA_API_KEY) > 10;
+    $activeProvider = defined('PAYMENT_PROVIDER') ? PAYMENT_PROVIDER : 'tinypesa';
 }
-$apiStatus = $apiKeySet ? 'ok' : 'warning';
-addCheck($checks, 'TinyPesa API Key', $apiKeySet ? 'Configured' : 'Placeholder value detected — update config.php with your real API key', $apiStatus, $apiKeySet ? 'Set' : 'Not Set');
-degradeOverall($overall, $apiStatus);
 
+$providerLabel = $providerLabels[$activeProvider] ?? [$activeProvider, 'unknown', '❓'];
+
+// ---- Provider-specific credential checks ----
+$providerChecks = [];
+
+switch ($activeProvider) {
+    case 'tinypesa':
+        $ok = defined('TINYPESA_API_KEY') && TINYPESA_API_KEY !== 'YOUR_TINYPESA_API_KEY_HERE' && strlen(TINYPESA_API_KEY) > 10;
+        $providerChecks[] = ['TinyPesa API Key', $ok ? 'Configured' : 'Placeholder value — update config.php with your real API key', $ok ? 'ok' : 'warning', $ok ? 'Set' : 'Not Set'];
+        break;
+
+    case 'daraja':
+        $ck = defined('DARAJA_CONSUMER_KEY')    && strlen(DARAJA_CONSUMER_KEY)    > 5 && DARAJA_CONSUMER_KEY    !== 'YOUR_DARAJA_CONSUMER_KEY';
+        $cs = defined('DARAJA_CONSUMER_SECRET') && strlen(DARAJA_CONSUMER_SECRET) > 5 && DARAJA_CONSUMER_SECRET !== 'YOUR_DARAJA_CONSUMER_SECRET';
+        $sc = defined('DARAJA_SHORTCODE')       && strlen(DARAJA_SHORTCODE)       > 3;
+        $pk = defined('DARAJA_PASSKEY')         && strlen(DARAJA_PASSKEY)         > 5;
+        $cb = defined('DARAJA_CALLBACK_URL')    && strpos(DARAJA_CALLBACK_URL, 'http') === 0;
+        $providerChecks[] = ['Daraja Consumer Key',    $ck ? 'Configured' : 'Not set or placeholder', $ck ? 'ok' : 'warning', $ck ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Daraja Consumer Secret', $cs ? 'Configured' : 'Not set or placeholder', $cs ? 'ok' : 'warning', $cs ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Daraja Shortcode',       $sc ? 'Configured' : 'Not set',                $sc ? 'ok' : 'warning', $sc ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Daraja Passkey',         $pk ? 'Configured' : 'Not set',                $pk ? 'ok' : 'warning', $pk ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Daraja Callback URL',    $cb ? (DARAJA_CALLBACK_URL) : 'Not set — set to your public HTTPS callback URL', $cb ? 'ok' : 'warning', $cb ? 'Set' : 'Not Set'];
+        $env = defined('DARAJA_ENV') ? DARAJA_ENV : 'sandbox';
+        $providerChecks[] = ['Daraja Environment',     'Currently: ' . $env, 'ok', strtoupper($env)];
+        break;
+
+    case 'pesapal':
+        $ck  = defined('PESAPAL_CONSUMER_KEY')    && strlen(PESAPAL_CONSUMER_KEY)    > 5;
+        $cs  = defined('PESAPAL_CONSUMER_SECRET') && strlen(PESAPAL_CONSUMER_SECRET) > 5;
+        $ipn = defined('PESAPAL_IPN_URL')         && strpos(PESAPAL_IPN_URL, 'http') === 0;
+        $cb  = defined('PESAPAL_CALLBACK_URL')    && strpos(PESAPAL_CALLBACK_URL, 'http') === 0;
+        $providerChecks[] = ['PesaPal Consumer Key',    $ck  ? 'Configured' : 'Not set', $ck  ? 'ok' : 'warning', $ck  ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['PesaPal Consumer Secret', $cs  ? 'Configured' : 'Not set', $cs  ? 'ok' : 'warning', $cs  ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['PesaPal IPN URL',         $ipn ? (PESAPAL_IPN_URL) : 'Not set — must point to callback_pesapal.php', $ipn ? 'ok' : 'warning', $ipn ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['PesaPal Callback URL',    $cb  ? (PESAPAL_CALLBACK_URL) : 'Not set', $cb  ? 'ok' : 'warning', $cb  ? 'Set' : 'Not Set'];
+        $env = defined('PESAPAL_ENV') ? PESAPAL_ENV : 'sandbox';
+        $providerChecks[] = ['PesaPal Environment', 'Currently: ' . $env, 'ok', strtoupper($env)];
+        break;
+
+    case 'flutterwave':
+        $sk = defined('FLW_SECRET_KEY')   && strlen(FLW_SECRET_KEY)   > 10 && FLW_SECRET_KEY !== 'YOUR_FLW_SECRET_KEY';
+        $pk = defined('FLW_PUBLIC_KEY')   && strlen(FLW_PUBLIC_KEY)   > 10 && FLW_PUBLIC_KEY !== 'YOUR_FLW_PUBLIC_KEY';
+        $ru = defined('FLW_REDIRECT_URL') && strpos(FLW_REDIRECT_URL, 'http') === 0;
+        $sh = defined('FLW_SECRET_HASH')  && strlen(FLW_SECRET_HASH)  > 5;
+        $providerChecks[] = ['Flutterwave Secret Key',   $sk ? 'Configured' : 'Not set or placeholder', $sk ? 'ok' : 'warning', $sk ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Flutterwave Public Key',   $pk ? 'Configured' : 'Not set or placeholder', $pk ? 'ok' : 'warning', $pk ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Flutterwave Redirect URL', $ru ? (FLW_REDIRECT_URL) : 'Not set', $ru ? 'ok' : 'warning', $ru ? 'Set' : 'Not Set'];
+        $providerChecks[] = ['Webhook Secret Hash',      $sh ? 'Configured — webhooks will be verified' : 'Not set — webhook signature verification disabled', $sh ? 'ok' : 'warning', $sh ? 'Set' : 'Not Set'];
+        break;
+
+    default:
+        $providerChecks[] = ['Provider', 'Unknown provider "' . htmlspecialchars($activeProvider) . '" — check PAYMENT_PROVIDER in config.php', 'error', 'Unknown'];
+}
+
+foreach ($providerChecks as [$title, $detail, $status, $badge]) {
+    addCheck($checks, $title, $detail, $status, $badge);
+    degradeOverall($overall, $status);
+}
+
+// ---- Shared checks ----
 $logFile     = __DIR__ . '/mpesa_log.json';
 $logDir      = __DIR__;
 $logWritable = is_writable($logDir);
@@ -199,7 +283,7 @@ degradeOverall($overall, $httpStatus);
 
 $icons = ['ok' => '✅', 'warning' => '⚠️', 'error' => '❌'];
 $overallMsgs = [
-    'ok'      => ['All Systems Operational', 'Your M-Pesa integration is ready to accept payments.'],
+    'ok'      => ['All Systems Operational', 'Your payment integration is ready to accept payments.'],
     'warning' => ['Attention Required',       'Some optional checks need review. Core functionality may still work.'],
     'error'   => ['Setup Incomplete',         'Critical issues detected. Resolve them before accepting payments.'],
 ];
@@ -215,6 +299,15 @@ $overallMsgs = [
             <a href="/admin.php" class="nav-link">Transaction Log</a>
             <a href="/" class="nav-link">&#8592; Payment Page</a>
         </div>
+    </div>
+
+    <div class="provider-banner">
+        <span class="provider-icon"><?= $providerLabel[2] ?></span>
+        <div class="provider-info">
+            <strong>Active Provider: <?= htmlspecialchars($providerLabel[0]) ?></strong>
+            <span><?= $providerLabel[1] === 'stk' ? 'STK Push — sends a PIN prompt directly to the customer\'s phone' : 'Hosted Checkout — redirects the customer to a payment page' ?></span>
+        </div>
+        <span class="provider-badge"><?= htmlspecialchars($activeProvider) ?></span>
     </div>
 
     <div class="overall <?= $overall ?>">

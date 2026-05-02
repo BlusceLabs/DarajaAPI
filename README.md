@@ -29,29 +29,55 @@ No frameworks. No build tools. Plain PHP + vanilla JS.
 
 ---
 
+## Supported Payment Providers
+
+Switch providers by changing one constant in `config.php` — no other code changes needed.
+
+| Provider | Type | Flow | Required credentials |
+|---|---|---|---|
+| **TinyPesa** (default) | M-Pesa STK Push | Phone PIN prompt | `TINYPESA_API_KEY` |
+| **Safaricom Daraja** | M-Pesa STK Push | Phone PIN prompt | `DARAJA_CONSUMER_KEY`, `DARAJA_CONSUMER_SECRET`, `DARAJA_SHORTCODE`, `DARAJA_PASSKEY`, `DARAJA_CALLBACK_URL` |
+| **PesaPal V3** | Hosted checkout | Browser redirect | `PESAPAL_CONSUMER_KEY`, `PESAPAL_CONSUMER_SECRET`, `PESAPAL_IPN_URL`, `PESAPAL_CALLBACK_URL` |
+| **Flutterwave** | Hosted checkout | Browser redirect | `FLW_SECRET_KEY`, `FLW_PUBLIC_KEY`, `FLW_REDIRECT_URL` |
+
+**STK Push** providers send a PIN prompt directly to the customer's phone — no redirect needed.  
+**Hosted checkout** providers redirect the customer to a payment page in their browser.
+
+```php
+// config.php — choose one
+define('PAYMENT_PROVIDER', 'tinypesa');    // default
+define('PAYMENT_PROVIDER', 'daraja');
+define('PAYMENT_PROVIDER', 'pesapal');
+define('PAYMENT_PROVIDER', 'flutterwave');
+```
+
+---
+
 ## Features
 
 **Payment flow**
-- STK Push — sends a PIN prompt directly to the customer's phone
+- STK Push (TinyPesa / Daraja) — sends a PIN prompt directly to the customer's phone
+- Hosted checkout (PesaPal / Flutterwave) — redirects to provider's payment page
 - Real-time inline phone and amount validation before submission
 - Quick-amount chips (50, 100, 500, 1,000, 2,500, 5,000) on the payment form
 - Optional account reference field (shown/hidden on demand)
-- Payment status polling — auto-detects confirmation and shows a receipt in the browser
-- Rate limiting — max 5 STK Push requests per IP per minute (file-based, no Redis required)
+- Payment status polling — auto-detects confirmation and shows a receipt (STK Push providers)
+- Rate limiting — max 5 payment requests per IP per minute (file-based, no Redis required)
 
 **Admin panel**
 - Summary stats: total requests, confirmed, failed, total KES collected
 - 7-day confirmed payments bar chart (pure SVG, computed in PHP — no JS charting library)
 - Date range filter — filter the transaction table by from/to date
 - Status tabs — All / Confirmed / Failed / Pending
-- Full-text search by phone number or M-Pesa receipt
+- Full-text search by phone number, receipt, or provider name
+- Provider badge column — shows which gateway processed each transaction, sortable
 - Click any row to open a slide-out detail drawer with the full transaction record
 - Pagination — 20 rows per page, works in combination with all filters
-- CSV export — downloads all transactions; respects the active date range filter
+- CSV export — downloads all transactions with Provider column; respects the active date range filter
 
 **Developer tools**
-- `/health.php` — checks PHP version, cURL, JSON extension, config, API key, log writability, temp dir, and HTTPS
-- `/webhook_test.php` — sends simulated M-Pesa callbacks to `callback.php` with four preset scenarios (success, user cancelled, insufficient funds, wrong PIN) and shows a live request/response log
+- `/health.php` — shows active provider name + flow type, checks all required credentials for that provider, PHP version, cURL, JSON, log writability, temp dir, and HTTPS
+- `/webhook_test.php` — sends simulated M-Pesa callbacks to `callback.php` with four preset scenarios (success, user cancelled, insufficient funds, wrong PIN)
 
 **Production hardening**
 - `.htaccess` — blocks direct browser access to `config.php`, `mpesa_log.json`, and all `.json` files; disables directory listings; adds security headers; routes 404s to the custom error page
@@ -68,8 +94,8 @@ No frameworks. No build tools. Plain PHP + vanilla JS.
 ## Requirements
 
 - PHP 7.4+ with the `curl` and `json` extensions enabled
-- A [TinyPesa](https://tinypesa.com) account and API key
-- A publicly accessible HTTPS URL for the M-Pesa callback (use [ngrok](https://ngrok.com) for local development)
+- An account with one of the [supported providers](#supported-payment-providers)
+- A publicly accessible HTTPS URL for callbacks (use [ngrok](https://ngrok.com) for local development)
 
 ---
 
@@ -125,20 +151,28 @@ Visit `/health.php` to check that all requirements are met before accepting paym
 ## File Structure
 
 ```
-├── index.php            # Payment UI — phone, amount chips, reference, inline validation
-├── stk_push.php         # POST endpoint — validates, rate-limits, calls TinyPesa API
-├── callback.php         # Receives M-Pesa callbacks, appends one JSON line per event
-├── check_status.php     # GET polling endpoint — confirms payment by phone number
-├── admin.php            # Admin panel — chart, stats, filter, search, drawer, pagination, CSV export
-├── export.php           # Streams mpesa_log.json as a downloadable CSV (supports date range)
-├── health.php           # System health check — environment, config, permissions, HTTPS
-├── webhook_test.php     # Dev tool — simulate M-Pesa callbacks with preset scenarios
-├── 404.php              # Custom 404 error page
-├── .htaccess            # Apache: protect sensitive files, security headers, 404 routing
-├── config.php           # Your credentials — gitignored, never commit this file
-├── config.example.php   # Safe credential template — copy to config.php
-├── favicon.svg          # SVG browser tab icon
-├── mpesa_log.json       # Auto-created — one JSON line per callback (gitignored)
+├── index.php                  # Payment UI — phone, amount chips, reference, inline validation
+├── stk_push.php               # POST endpoint — validates, rate-limits, delegates to active provider
+├── callback.php               # Receives STK callbacks (TinyPesa / Daraja), delegates to provider
+├── callback_pesapal.php       # PesaPal IPN endpoint — queries transaction status and logs result
+├── callback_flutterwave.php   # Flutterwave webhook — verifies signature hash, logs result
+├── check_status.php           # GET polling endpoint — confirms payment by phone number
+├── admin.php                  # Admin panel — chart, stats, filter, search, drawer, pagination, CSV export
+├── export.php                 # Streams mpesa_log.json as a downloadable CSV (supports date range)
+├── health.php                 # System health — active provider, credentials, environment checks
+├── webhook_test.php           # Dev tool — simulate M-Pesa callbacks with preset scenarios
+├── 404.php                    # Custom 404 error page
+├── .htaccess                  # Apache: protect sensitive files, security headers, 404 routing
+├── config.php                 # Your credentials — gitignored, never commit this file
+├── config.example.php         # Safe credential template — copy to config.php
+├── favicon.svg                # SVG browser tab icon
+├── mpesa_log.json             # Auto-created — one JSON line per callback (gitignored)
+├── providers/
+│   ├── base.php               # Interface contract — docblocks for all required functions
+│   ├── tinypesa.php           # TinyPesa STK Push provider
+│   ├── daraja.php             # Safaricom Daraja API STK Push provider
+│   ├── pesapal.php            # PesaPal V3 hosted checkout provider
+│   └── flutterwave.php        # Flutterwave hosted checkout provider
 ├── README.md
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
@@ -151,7 +185,7 @@ Visit `/health.php` to check that all requirements are met before accepting paym
 
 ### `POST /stk_push.php`
 
-Triggers an STK push to the customer's phone.
+Initiates a payment request using the active provider. Validates input, applies rate limiting, then delegates to the active provider.
 
 **Rate limit:** 5 requests per IP per minute. Returns `429 Too Many Requests` with a `Retry-After` header if exceeded.
 
@@ -168,9 +202,14 @@ Triggers an STK push to the customer's phone.
 
 **Accepted phone formats:** `0712345678` · `+254712345678` · `254712345678` · `0112345678`
 
-**Success response:**
+**STK Push success (TinyPesa / Daraja):**
 ```json
-{ "success": true, "message": "STK Push sent! Check your phone.", "reference": "Invoice-001" }
+{ "success": true, "message": "STK Push sent! Check your phone.", "reference": "Invoice-001", "flow": "stk", "redirect_url": null }
+```
+
+**Hosted checkout success (PesaPal / Flutterwave):**
+```json
+{ "success": true, "message": "Redirecting to payment page…", "reference": "Invoice-001", "flow": "redirect", "redirect_url": "https://pay.pesapal.com/..." }
 ```
 
 **Error response:**
@@ -182,6 +221,8 @@ Triggers an STK push to the customer's phone.
 ```json
 { "success": false, "message": "Too many requests. Please wait before trying again." }
 ```
+
+The frontend detects `flow: "redirect"` and navigates the user to `redirect_url` automatically.
 
 ---
 
@@ -319,6 +360,39 @@ Developer-only tool to simulate M-Pesa callbacks without making a real payment. 
 
 ---
 
+## Provider Configuration
+
+### TinyPesa (default)
+
+1. Sign up at [tinypesa.com](https://tinypesa.com) and copy your API key from the dashboard
+2. In `config.php`, set `PAYMENT_PROVIDER = 'tinypesa'` and `TINYPESA_API_KEY`
+3. Set your callback URL in the TinyPesa dashboard to `https://yourdomain.com/callback.php`
+
+### Safaricom Daraja
+
+1. Create an app at [developer.safaricom.co.ke](https://developer.safaricom.co.ke) and get Consumer Key + Consumer Secret
+2. Note your Shortcode and Passkey from the Lipa Na M-Pesa Online dashboard
+3. Set `PAYMENT_PROVIDER = 'daraja'` and fill in all `DARAJA_*` constants
+4. Set `DARAJA_ENV = 'sandbox'` for testing, `'production'` for live
+5. Your callback URL is `https://yourdomain.com/callback.php`
+
+### PesaPal V3
+
+1. Register at [developer.pesapal.com](https://developer.pesapal.com) and get Consumer Key + Consumer Secret
+2. Set `PAYMENT_PROVIDER = 'pesapal'` and fill in all `PESAPAL_*` constants
+3. Set `PESAPAL_IPN_URL` to `https://yourdomain.com/callback_pesapal.php` — PesaPal will POST IPN notifications here
+4. Set `PESAPAL_CALLBACK_URL` to where PesaPal should redirect the user after payment (e.g. your homepage)
+5. Set `PESAPAL_ENV = 'sandbox'` for testing (`cybqa.pesapal.com`), `'production'` for live (`pay.pesapal.com`)
+
+### Flutterwave
+
+1. Sign up at [flutterwave.com](https://flutterwave.com) and get your Secret Key and Public Key from the dashboard
+2. Set `PAYMENT_PROVIDER = 'flutterwave'` and fill in all `FLW_*` constants
+3. Set `FLW_REDIRECT_URL` to where Flutterwave should redirect the user after payment
+4. In the Flutterwave dashboard under **Webhooks**, set the webhook URL to `https://yourdomain.com/callback_flutterwave.php` and copy the Secret Hash into `FLW_SECRET_HASH`
+
+---
+
 ## Security Notes
 
 - **`config.php` is gitignored** — never commit it. Use `config.example.php` as the template.
@@ -327,7 +401,8 @@ Developer-only tool to simulate M-Pesa callbacks without making a real payment. 
 - **`admin.php` has no authentication by default.** Add HTTP basic auth or a session check before deploying to a public server.
 - **`webhook_test.php`** is a development tool — remove it or restrict access in production.
 - **Rate limiting** is file-based (uses `sys_get_temp_dir()`). For high-traffic deployments, consider replacing it with Redis or a database-backed approach.
-- The callback URL must be an HTTPS endpoint reachable by Safaricom's servers.
+- **Flutterwave webhooks** are signature-verified via `FLW_SECRET_HASH` — always set this in production.
+- Callback URLs must be HTTPS endpoints reachable from the internet. Use [ngrok](https://ngrok.com) for local development.
 
 ---
 

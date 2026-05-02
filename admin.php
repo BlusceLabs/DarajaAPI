@@ -33,6 +33,7 @@
             --badge-ok-bg: #e6f7ee;    --badge-ok-text: #1a6b3a;
             --badge-fail-bg: #fdf2f2;  --badge-fail-text: #8b2020;
             --badge-pend-bg: #fff8e6;  --badge-pend-text: #7a5a00;
+            --badge-prov-bg: #eef4ff;  --badge-prov-text: #1a3a8f;
             --stat-value: #006633;
             --stat-neutral: #222;
             --stat-red: #c0392b;
@@ -78,6 +79,7 @@
             --badge-ok-bg: #0f2a1a;    --badge-ok-text: #56d364;
             --badge-fail-bg: #2d1111;  --badge-fail-text: #f97171;
             --badge-pend-bg: #2a2000;  --badge-pend-text: #e3b341;
+            --badge-prov-bg: #0d1e3a;  --badge-prov-text: #79b8ff;
             --stat-value: #3fb950;
             --stat-neutral: #e6edf3;
             --stat-red: #f97171;
@@ -260,9 +262,10 @@
             display: inline-flex; align-items: center; gap: 4px;
             padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700;
         }
-        .badge.success { background: var(--badge-ok-bg);   color: var(--badge-ok-text); }
-        .badge.failed  { background: var(--badge-fail-bg); color: var(--badge-fail-text); }
-        .badge.pending { background: var(--badge-pend-bg); color: var(--badge-pend-text); }
+        .badge.success  { background: var(--badge-ok-bg);   color: var(--badge-ok-text); }
+        .badge.failed   { background: var(--badge-fail-bg); color: var(--badge-fail-text); }
+        .badge.pending  { background: var(--badge-pend-bg); color: var(--badge-pend-text); }
+        .badge.provider { background: var(--badge-prov-bg); color: var(--badge-prov-text); font-weight: 600; }
         .receipt { font-family: monospace; font-size: 12px; color: var(--text-2); }
         .amount  { font-weight: 700; }
         .phone   { color: var(--text-2); }
@@ -526,12 +529,13 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
     <table id="txTable">
         <thead>
             <tr>
-                <th data-col="num"     onclick="setSort('num')">#</th>
-                <th data-col="date"    onclick="setSort('date')">Date / Time</th>
-                <th data-col="phone"   onclick="setSort('phone')">Phone</th>
-                <th data-col="amount"  onclick="setSort('amount')">Amount</th>
-                <th data-col="receipt" onclick="setSort('receipt')">Receipt</th>
-                <th data-col="status"  onclick="setSort('status')">Status</th>
+                <th data-col="num"      onclick="setSort('num')">#</th>
+                <th data-col="date"     onclick="setSort('date')">Date / Time</th>
+                <th data-col="provider" onclick="setSort('provider')">Provider</th>
+                <th data-col="phone"    onclick="setSort('phone')">Phone</th>
+                <th data-col="amount"   onclick="setSort('amount')">Amount</th>
+                <th data-col="receipt"  onclick="setSort('receipt')">Receipt</th>
+                <th data-col="status"   onclick="setSort('status')">Status</th>
                 <th>Description</th>
             </tr>
         </thead>
@@ -541,20 +545,23 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             $status   = ($rc === null) ? 'pending' : ($rc === 0 ? 'success' : 'failed');
             $label    = ($rc === null) ? 'Pending'  : ($rc === 0 ? 'Confirmed' : 'Failed');
             $icon     = ($rc === null) ? '⏳'        : ($rc === 0 ? '✅' : '❌');
-            $rawPhone = (string)($e['PhoneNumber'] ?? '');
-            $phone    = $rawPhone ? '0' . substr($rawPhone, 3) : '—';
-            $amount   = isset($e['Amount']) ? 'KES ' . number_format((float)$e['Amount'], 2) : '—';
-            $sortAmt  = isset($e['Amount']) ? (float)$e['Amount'] : 0;
-            $receipt  = $e['MpesaReceiptNumber'] ?? '—';
-            $date     = $e['timestamp'] ?? '—';
-            $desc     = $e['ResultDesc'] ?? '—';
-            $txJson   = htmlspecialchars(json_encode($e), ENT_QUOTES, 'UTF-8');
-            $rowNum   = $total - $i;
+            $rawPhone      = (string)($e['PhoneNumber'] ?? '');
+            $phone         = $rawPhone ? '0' . substr($rawPhone, 3) : '—';
+            $amount        = isset($e['Amount']) ? 'KES ' . number_format((float)$e['Amount'], 2) : '—';
+            $sortAmt       = isset($e['Amount']) ? (float)$e['Amount'] : 0;
+            $receipt       = $e['MpesaReceiptNumber'] ?? '—';
+            $date          = $e['timestamp'] ?? '—';
+            $desc          = $e['ResultDesc'] ?? '—';
+            $provider      = $e['provider'] ?? 'tinypesa';
+            $providerNames = ['tinypesa' => 'TinyPesa', 'daraja' => 'Daraja', 'pesapal' => 'PesaPal', 'flutterwave' => 'Flutterwave'];
+            $providerLabel = $providerNames[$provider] ?? ucfirst($provider);
+            $txJson        = htmlspecialchars(json_encode($e), ENT_QUOTES, 'UTF-8');
+            $rowNum        = $total - $i;
         ?>
         <tr
             data-status="<?= $status ?>"
             data-date="<?= substr($date, 0, 10) ?>"
-            data-search="<?= strtolower(htmlspecialchars($phone . ' ' . $receipt)) ?>"
+            data-search="<?= strtolower(htmlspecialchars($phone . ' ' . $receipt . ' ' . $provider)) ?>"
             data-tx="<?= $txJson ?>"
             data-sortnum="<?= $rowNum ?>"
             data-sortdate="<?= htmlspecialchars($date) ?>"
@@ -562,11 +569,13 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             data-sortamount="<?= $sortAmt ?>"
             data-sortreceipt="<?= htmlspecialchars($receipt === '—' ? '' : $receipt) ?>"
             data-sortstatus="<?= $status ?>"
+            data-sortprovider="<?= htmlspecialchars($provider) ?>"
             onclick="openDrawer(this)"
             title="Click to view full details"
         >
             <td style="color:var(--text-6);font-size:12px"><?= $rowNum ?></td>
             <td style="white-space:nowrap;color:var(--text-8)"><?= htmlspecialchars($date) ?></td>
+            <td><span class="badge provider"><?= htmlspecialchars($providerLabel) ?></span></td>
             <td class="phone"><?= htmlspecialchars($phone) ?></td>
             <td class="amount"><?= htmlspecialchars($amount) ?></td>
             <td class="receipt"><?= htmlspecialchars($receipt) ?></td>
@@ -634,7 +643,7 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
     let currentFilter = 'all';
     let currentPage   = 1;
     let visibleRows   = [];
-    let sortCol       = null;   // 'num'|'date'|'phone'|'amount'|'receipt'|'status'
+    let sortCol       = null;   // 'num'|'date'|'provider'|'phone'|'amount'|'receipt'|'status'
     let sortDir       = 'asc';  // 'asc'|'desc'
 
     // ---- Sort ----
@@ -801,14 +810,17 @@ $barW  = 60;  $slotW = $svgW / 7; $gap = 8;
             : '—';
         const bCls = {'success':'badge success','failed':'badge failed','pending':'badge pending'}[status];
 
+        const providerNames = {tinypesa:'TinyPesa', daraja:'Daraja', pesapal:'PesaPal', flutterwave:'Flutterwave'};
+        const providerLabel = providerNames[tx.provider] || (tx.provider ? tx.provider.charAt(0).toUpperCase() + tx.provider.slice(1) : 'TinyPesa');
         const rows = [
             ['Status',      `<span class="${bCls}">${icon} ${label}</span>`, true],
+            ['Provider',    `<span class="badge provider">${esc(providerLabel)}</span>`, true],
             ['Phone',       phone],
             ['Amount',      amount],
             ['Receipt',     tx.MpesaReceiptNumber || '—'],
             ['Date',        tx.timestamp || '—'],
             ['Description', tx.ResultDesc || '—'],
-            ['Reference',   tx.AccountReference || tx.reference || '—'],
+            ['Reference',   tx.AccountReference || tx.reference || tx.Reference || '—'],
         ];
         const techRows = [
             ['Result Code',  String(rc ?? '—')],
