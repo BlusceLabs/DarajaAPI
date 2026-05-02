@@ -6,6 +6,29 @@ No frameworks. No build tools. Plain PHP + vanilla JS.
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><strong>Payment Form</strong></td>
+    <td align="center"><strong>Admin Panel</strong></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/payment-form.jpg" alt="Payment form — phone input, amount chips, Pay Now button" width="420"/></td>
+    <td><img src="screenshots/admin-panel.jpg" alt="Admin panel — stats, 7-day chart, transaction table" width="420"/></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>System Health Check</strong></td>
+    <td align="center"><strong>Webhook Simulator</strong></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/health-check.jpg" alt="Health check page — PHP version, extensions, config status" width="420"/></td>
+    <td><img src="screenshots/webhook-simulator.jpg" alt="Webhook simulator — preset scenarios, live response log" width="420"/></td>
+  </tr>
+</table>
+
+---
+
 ## Features
 
 **Payment flow**
