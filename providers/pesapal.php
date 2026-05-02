@@ -18,7 +18,34 @@ function _pesapal_base_url(): string {
         : 'https://cybqa.pesapal.com/pesapalv3';
 }
 
+function _pesapal_token_cache_file(): string {
+    $env = defined('PESAPAL_ENV') ? PESAPAL_ENV : 'sandbox';
+    return sys_get_temp_dir() . '/pesapal_oauth_token_' . $env . '.json';
+}
+
+function _pesapal_get_cached_token(): string|false {
+    $file = _pesapal_token_cache_file();
+    if (!file_exists($file)) return false;
+    $raw = @file_get_contents($file);
+    if ($raw === false) return false;
+    $data = json_decode($raw, true);
+    if (!isset($data['token'], $data['expires_at'])) return false;
+    if (time() >= $data['expires_at']) return false;
+    return $data['token'];
+}
+
+function _pesapal_cache_token(string $token, int $ttl = 3600): void {
+    $file    = _pesapal_token_cache_file();
+    $payload = json_encode(['token' => $token, 'expires_at' => time() + $ttl - 60]);
+    if (@file_put_contents($file, $payload, LOCK_EX) !== false) {
+        @chmod($file, 0600);
+    }
+}
+
 function _pesapal_get_token(): string|false {
+    $cached = _pesapal_get_cached_token();
+    if ($cached !== false) return $cached;
+
     $key    = defined('PESAPAL_CONSUMER_KEY')    ? PESAPAL_CONSUMER_KEY    : '';
     $secret = defined('PESAPAL_CONSUMER_SECRET') ? PESAPAL_CONSUMER_SECRET : '';
 
@@ -40,8 +67,15 @@ function _pesapal_get_token(): string|false {
 
     if ($curlErr || !$response) return false;
 
-    $data = json_decode($response, true);
-    return $data['token'] ?? false;
+    $data  = json_decode($response, true);
+    $token = $data['token'] ?? false;
+    if ($token) {
+        $ttl = isset($data['expiryDate'])
+            ? max(0, (int)(strtotime($data['expiryDate']) - time()))
+            : 3600;
+        _pesapal_cache_token($token, $ttl ?: 3600);
+    }
+    return $token;
 }
 
 function _pesapal_register_ipn(string $token): string|false {

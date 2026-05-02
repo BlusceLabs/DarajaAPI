@@ -18,7 +18,34 @@ function _daraja_base_url(): string {
         : 'https://sandbox.safaricom.co.ke';
 }
 
+function _daraja_token_cache_file(): string {
+    $env = defined('DARAJA_ENV') ? DARAJA_ENV : 'sandbox';
+    return sys_get_temp_dir() . '/daraja_oauth_token_' . $env . '.json';
+}
+
+function _daraja_get_cached_token(): string|false {
+    $file = _daraja_token_cache_file();
+    if (!file_exists($file)) return false;
+    $raw = @file_get_contents($file);
+    if ($raw === false) return false;
+    $data = json_decode($raw, true);
+    if (!isset($data['token'], $data['expires_at'])) return false;
+    if (time() >= $data['expires_at']) return false;
+    return $data['token'];
+}
+
+function _daraja_cache_token(string $token, int $ttl = 3600): void {
+    $file    = _daraja_token_cache_file();
+    $payload = json_encode(['token' => $token, 'expires_at' => time() + $ttl - 60]);
+    if (@file_put_contents($file, $payload, LOCK_EX) !== false) {
+        @chmod($file, 0600);
+    }
+}
+
 function _daraja_get_token(): string|false {
+    $cached = _daraja_get_cached_token();
+    if ($cached !== false) return $cached;
+
     $key    = defined('DARAJA_CONSUMER_KEY')    ? DARAJA_CONSUMER_KEY    : '';
     $secret = defined('DARAJA_CONSUMER_SECRET') ? DARAJA_CONSUMER_SECRET : '';
 
@@ -37,8 +64,10 @@ function _daraja_get_token(): string|false {
 
     if ($curlErr || !$response) return false;
 
-    $data = json_decode($response, true);
-    return $data['access_token'] ?? false;
+    $data  = json_decode($response, true);
+    $token = $data['access_token'] ?? false;
+    if ($token) _daraja_cache_token($token, (int)($data['expires_in'] ?? 3600));
+    return $token;
 }
 
 function provider_initiate(string $phone, float $amount, string $reference): array {
