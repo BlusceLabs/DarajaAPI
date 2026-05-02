@@ -70,15 +70,20 @@ Open `http://localhost:8000` in your browser.
 ## File Structure
 
 ```
-├── index.php            # Payment UI — phone, amount, quick-select chips, reference
-├── stk_push.php         # POST endpoint — validates input, calls TinyPesa API
-├── callback.php         # Receives M-Pesa results from TinyPesa / Safaricom
-├── check_status.php     # GET endpoint — polls log for payment confirmation
-├── admin.php            # Transaction log viewer with stats and filtering
+├── index.php            # Payment UI — phone, amount chips, reference, inline validation
+├── stk_push.php         # POST endpoint — validates, rate-limits, calls TinyPesa API
+├── callback.php         # Receives M-Pesa callbacks, appends to log
+├── check_status.php     # GET polling endpoint — confirms payment by phone
+├── admin.php            # Transaction log — stats, filter, search, date range, CSV export
+├── export.php           # Streams mpesa_log.json as downloadable CSV
+├── health.php           # System health check — PHP, extensions, config, permissions
+├── webhook_test.php     # Dev tool — simulate M-Pesa callbacks without real transactions
+├── 404.php              # Custom 404 error page
+├── .htaccess            # Apache: protect sensitive files, security headers, 404 routing
 ├── config.php           # Your credentials (gitignored — never commit)
 ├── config.example.php   # Safe template — copy to config.php
-├── favicon.svg          # Browser tab icon
-├── mpesa_log.json        # Auto-created — one JSON entry per callback
+├── favicon.svg          # SVG browser tab icon
+├── mpesa_log.json        # Auto-created — one JSON line per callback (gitignored)
 ├── README.md
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md

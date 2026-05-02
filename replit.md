@@ -12,12 +12,15 @@ Open-source PHP integration for Lipa Na M-Pesa Online (STK Push) using the TinyP
 ### File Structure
 ```
 index.php            Payment UI — phone, amount chips, reference, inline validation
-stk_push.php         POST endpoint — validates input, rate-limits, calls TinyPesa API
+stk_push.php         POST endpoint — validates, rate-limits, calls TinyPesa API
 callback.php         Receives M-Pesa payment callbacks, appends JSON lines to log
 check_status.php     GET polling endpoint — returns confirmed payment details
-admin.php            Transaction log viewer — stats, filter, search, CSV export link
+admin.php            Transaction log — stats, filter, search, date range, CSV export
 export.php           Streams mpesa_log.json as a downloadable CSV
+health.php           System status page — PHP, cURL, config, permissions, HTTPS checks
+webhook_test.php     Dev tool — simulate M-Pesa callbacks with preset scenarios
 404.php              Custom 404 error page
+.htaccess            Apache: blocks config.php/log access, security headers, 404 routing
 config.php           Credentials (gitignored — never commit)
 config.example.php   Safe template — copy to config.php
 favicon.svg          SVG browser tab icon

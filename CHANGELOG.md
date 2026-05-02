@@ -7,6 +7,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.3.0] — 2024-12-10
+
+### Added
+- **`.htaccess`** — blocks direct browser access to `config.php` and `mpesa_log.json`; disables directory listings; adds security headers; 404 routed to `404.php`
+- **`webhook_test.php`** — developer simulator for sending test M-Pesa callbacks with preset scenarios (success, cancelled, insufficient funds, wrong PIN); shows live request/response log
+- **`health.php`** — system status page checking PHP version, cURL/JSON extensions, config, API key, log writability, temp dir, and HTTPS
+- **Date range filter** on `admin.php` — filter transactions by from/to date using native date pickers
+- **Health** and **Simulator** quick-links added to `admin.php` header
+
+---
+
 ## [1.2.0] — 2024-12-10
 
 ### Added

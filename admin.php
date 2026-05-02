@@ -131,6 +131,26 @@
         .empty p { font-size: 14px; }
 
         .countdown { font-size: 11px; color: #bbb; }
+
+        .date-filter {
+            max-width: 960px; margin: 0 auto 16px;
+            background: #fff; border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            padding: 14px 18px;
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+        }
+        .date-filter label { font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+        .date-filter input[type="date"] {
+            padding: 7px 10px; border: 1.5px solid #e0e6e0; border-radius: 8px;
+            font-size: 13px; color: #333; background: #fafafa; cursor: pointer;
+        }
+        .date-filter input[type="date"]:focus { outline: none; border-color: #00a651; }
+        .date-sep { font-size: 12px; color: #bbb; }
+        .date-clear {
+            font-size: 12px; color: #aaa; background: none; border: none;
+            cursor: pointer; text-decoration: underline; margin-left: auto; padding: 0;
+        }
+        .date-clear:hover { color: #c0392b; }
     </style>
 </head>
 <body>
@@ -183,6 +203,8 @@ $lastUpdated    = date('H:i:s');
             </svg>
             Export CSV
         </a>
+        <a href="/health.php" class="back-link">Health</a>
+        <a href="/webhook_test.php" class="back-link">Simulator</a>
         <a href="/" class="back-link">&#8592; Payment Page</a>
     </div>
 </div>
@@ -208,6 +230,14 @@ $lastUpdated    = date('H:i:s');
         <div class="value">KES <?= number_format($totalAmt, 2) ?></div>
         <div class="sub">Confirmed payments only</div>
     </div>
+</div>
+
+<div class="date-filter">
+    <label>Date Range</label>
+    <input type="date" id="dateFrom" onchange="applySearch()" title="From date">
+    <span class="date-sep">—</span>
+    <input type="date" id="dateTo" onchange="applySearch()" title="To date">
+    <button class="date-clear" onclick="clearDates()">Clear dates</button>
 </div>
 
 <div class="table-wrap">
@@ -262,7 +292,7 @@ $lastUpdated    = date('H:i:s');
             $date    = $e['timestamp'] ?? '—';
             $desc    = $e['ResultDesc'] ?? '—';
         ?>
-        <tr data-status="<?= $status ?>" data-search="<?= strtolower(htmlspecialchars($phone . ' ' . $receipt)) ?>">
+        <tr data-status="<?= $status ?>" data-date="<?= substr($date, 0, 10) ?>" data-search="<?= strtolower(htmlspecialchars($phone . ' ' . $receipt)) ?>">
             <td style="color:#ccc;font-size:12px"><?= $total - $i ?></td>
             <td style="white-space:nowrap;color:#777"><?= htmlspecialchars($date) ?></td>
             <td class="phone"><?= htmlspecialchars($phone) ?></td>
@@ -317,19 +347,32 @@ $lastUpdated    = date('H:i:s');
         applySearch();
     }
 
-    // Search
+    // Search + date filter
     function applySearch() {
-        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        const q        = document.getElementById('searchInput').value.toLowerCase().trim();
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo   = document.getElementById('dateTo').value;
         let visible = 0;
+
         document.querySelectorAll('#txTable tbody tr').forEach(row => {
             const matchFilter = currentFilter === 'all' || row.dataset.status === currentFilter;
             const matchSearch = !q || row.dataset.search.includes(q);
-            const show = matchFilter && matchSearch;
+            const rowDate     = row.dataset.date || '';
+            const matchFrom   = !dateFrom || rowDate >= dateFrom;
+            const matchTo     = !dateTo   || rowDate <= dateTo;
+            const show = matchFilter && matchSearch && matchFrom && matchTo;
             row.style.display = show ? '' : 'none';
             if (show) visible++;
         });
+
         const noRes = document.getElementById('noResults');
         if (noRes) noRes.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    function clearDates() {
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value   = '';
+        applySearch();
     }
 </script>
 </body>
