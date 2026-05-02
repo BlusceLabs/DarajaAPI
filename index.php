@@ -107,6 +107,35 @@
 
         .hint { font-size: 11.5px; color: #aaa; margin-top: 5px; }
 
+        .field-error {
+            font-size: 11.5px;
+            color: #c0392b;
+            margin-top: 5px;
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .field-error.show { display: flex; }
+
+        .field-ok {
+            font-size: 11.5px;
+            color: #1a8a4a;
+            margin-top: 5px;
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .field-ok.show { display: flex; }
+
+        input.invalid {
+            border-color: #e74c3c !important;
+            box-shadow: 0 0 0 3px rgba(231,76,60,0.10) !important;
+        }
+        input.valid {
+            border-color: #00a651 !important;
+            box-shadow: 0 0 0 3px rgba(0,166,81,0.10) !important;
+        }
+
         /* Quick-amount chips */
         .quick-amounts {
             display: flex;
@@ -269,7 +298,9 @@
                     <span class="input-prefix">📱</span>
                     <input type="tel" id="phone" placeholder="0712 345 678" autocomplete="tel" required>
                 </div>
-                <p class="hint">Formats accepted: 07XX &bull; 01XX &bull; +254XXX</p>
+                <p class="field-error" id="phoneError">&#9888; Invalid Safaricom number. Use 07XX or 01XX format.</p>
+                <p class="field-ok"    id="phoneOk">&#10003; Valid phone number</p>
+                <p class="hint" id="phoneHint">Formats accepted: 07XX &bull; 01XX &bull; +254XXX</p>
             </div>
 
             <div class="form-group">
@@ -286,7 +317,9 @@
                     <span class="chip" data-val="2500">2,500</span>
                     <span class="chip" data-val="5000">5,000</span>
                 </div>
-                <p class="hint" style="margin-top:8px">Min: KES 1 &bull; Max: KES 150,000</p>
+                <p class="field-error" id="amountError">&#9888; Enter an amount between KES 1 and KES 150,000.</p>
+                <p class="field-ok"    id="amountOk">&#10003; Valid amount</p>
+                <p class="hint" id="amountHint" style="margin-top:8px">Min: KES 1 &bull; Max: KES 150,000</p>
             </div>
 
             <span class="ref-toggle" id="refToggle">+ Add account reference</span>
@@ -344,6 +377,54 @@
     const refField    = document.getElementById('refField');
 
     let pollInterval = null;
+
+    // ------------------------------------------------------------------
+    // REAL-TIME INLINE VALIDATION
+    // ------------------------------------------------------------------
+    function setFieldState(input, errorEl, okEl, hintEl, isValid, hasContent) {
+        input.classList.toggle('invalid', hasContent && !isValid);
+        input.classList.toggle('valid',   hasContent && isValid);
+        errorEl.classList.toggle('show',  hasContent && !isValid);
+        okEl.classList.toggle('show',     hasContent && isValid);
+        if (hintEl) hintEl.style.display = hasContent ? 'none' : '';
+    }
+
+    function validatePhone(val) {
+        const stripped = val.replace(/^(\+254|254|0)/, '');
+        return /^(7|1)\d{8}$/.test(stripped);
+    }
+
+    function validateAmount(val) {
+        const n = parseFloat(val);
+        return !isNaN(n) && n >= 1 && n <= 150000;
+    }
+
+    const phoneError  = document.getElementById('phoneError');
+    const phoneOk     = document.getElementById('phoneOk');
+    const phoneHint   = document.getElementById('phoneHint');
+    const amountError = document.getElementById('amountError');
+    const amountOk    = document.getElementById('amountOk');
+    const amountHint  = document.getElementById('amountHint');
+
+    phoneInput.addEventListener('input', () => {
+        const v = phoneInput.value.trim();
+        setFieldState(phoneInput, phoneError, phoneOk, phoneHint, validatePhone(v), v.length > 0);
+    });
+
+    phoneInput.addEventListener('blur', () => {
+        const v = phoneInput.value.trim();
+        if (v) setFieldState(phoneInput, phoneError, phoneOk, phoneHint, validatePhone(v), true);
+    });
+
+    amountInput.addEventListener('input', () => {
+        const v = amountInput.value.trim();
+        setFieldState(amountInput, amountError, amountOk, amountHint, validateAmount(v), v.length > 0);
+    });
+
+    amountInput.addEventListener('blur', () => {
+        const v = amountInput.value.trim();
+        if (v) setFieldState(amountInput, amountError, amountOk, amountHint, validateAmount(v), true);
+    });
 
     // Reference field toggle
     refToggle.addEventListener('click', () => {
